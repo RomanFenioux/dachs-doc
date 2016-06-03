@@ -96,7 +96,7 @@ here can be found in in the `GAVO datacenter element reference`_.
 
 .. _GAVO datacenter element reference: http://docs.g-vo.org/DaCHS/elemref.html
 
-:doc:`Struct <Struct>`
+:doc:`Struct <_Structs>`
 
 
 Active Tags
@@ -106,7 +106,7 @@ The following tags are "active", which means that they do not directly
 contribute to the RD parsed.  Instead they define, replay, or edit
 streams of elements.
 
-:doc:`ActiveTag <ActiveTag>`
+:doc:`ActiveTag <_ActiveTags>`
 
 
 Grammars Available
@@ -115,7 +115,7 @@ Grammars Available
 The following elements are all grammar related.  All grammar elements
 can occur in data descriptors.
 
-:doc:`Grammar <Grammar>`
+:doc:`Grammar <_Grammars>`
 
 Cores Available
 ===============
