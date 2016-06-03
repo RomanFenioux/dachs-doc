@@ -1,1 +1,1238 @@
+Grammars
+========
 Element binaryGrammar
+'''''''''''''''''''''
+
+A grammar that builds rowdicts from binary data.
+
+The grammar expects the input to be in fixed-length records. 
+the actual specification of the fields is done via a binaryRecordDef
+element.
+
+binaryGrammar
+Atomic Children
+...............
+
+* **armor** (One of: fortran; defaults to None) -- Record armoring; by
+  default it's None meaning the data was dumped to the file
+  sequentially.  Set it to fortran for fortran unformatted files (4
+  byte length before and after the payload).
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **skipBytes** (integer; defaults to '0') -- Number of bytes to skip
+  before parsing records.
+
+Structure Children
+..................
+
+* fieldDefs (contains `Element binaryRecordDef`_) -- Definition of the
+  record.
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element binaryRecordDef
+'''''''''''''''''''''''
+
+A definition of a binary record.
+
+A binary records consists of a number of binary fields, each of which
+is defined by a name and a format code.  The format codes supported
+here are a subset of what python's struct module supports.  The
+widths given below are for big, little, and packed binfmts.
+For native (which is the default), it depends on your platform.
+
+* <number>s -- <number> characters making up a string
+* b,B -- signed and unsigned byte (8 bit)
+* h,H -- signed and unsigned short (16 bit)
+* i,I -- signed and unsigned int (32 bit)
+* q,Q -- signed and unsigned long (64 bit)
+* f,d -- float and double.
+
+The content of this element gives the record structure in the format
+<name>(<code>){<whitespace><name>(<code>)} where <name> is a c-style
+identifier.
+
+binaryRecordDef
+Atomic Children
+...............
+
+* **binfmt** (One of: big, little, packed, native; defaults to
+  'native') -- Binary format of the input data; big and little stand
+  for msb first and lsb first, and packed is like native except no
+  alignment takes place.
+* Character content of the element (defaulting to '') -- The
+  enumeration of the record fields.
+
+Element cdfHeaderGrammar
+''''''''''''''''''''''''
+
+A grammar that returns the header dictionary of a CDF file
+(global attributes).
+
+This grammar yields a single dictionary per file, which corresponds
+to the global attributes.  The values in this dictionary may have
+complex structure; in particular, sequences are returned as lists.
+
+To use this grammar, additional software is required that (by 2014)
+is not packaged for Debian.  See
+http://spacepy.lanl.gov/doc/install_linux.html for installation 
+instructions.  Note that you must install the CDF library itself as
+described further down on that page; the default installation 
+instructions do not install the library in a public place, so if
+you use these, you'll have to set CDF_LIB to the right value, too.
+
+cdfHeaderGrammar
+Atomic Children
+...............
+
+* **autoAtomize** (boolean; defaults to 'False') -- Unpack 1-element
+  lists to their first value.
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* mapKeys (contains `Element mapKeys`_) -- Prescription for how to map
+  labels keys to grammar dictionary keys
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element columnGrammar
+'''''''''''''''''''''
+
+A grammar that builds rowdicts out of character index ranges.
+
+This works by using the colRanges attribute like <col key="mag">12-16</col>,
+which will take the characters 12 through 16 inclusive from each input
+line to build the input column mag.
+
+As a shortcut, you can also use the colDefs attribute; it contains
+a string of the form {<key>:<range>}, i.e.,
+a whitespace-separated list of colon-separated items of key and range
+as accepted by cols, e.g.::
+
+  <colDefs>
+    a: 3-4
+    _u: 7
+  </colDefs>
+
+columnGrammar
+Atomic Children
+...............
+
+* **colDefs** (unicode string; defaults to None) -- Shortcut way of
+  defining cols
+* **commentIntroducer** (unicode string; defaults to <Not
+  given/empty>) -- A character sequence that, when found at the
+  beginning of a line makes this line ignored
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **gunzip** (boolean; defaults to 'False') -- Unzip sources while
+  reading? (Deprecated, use preFilter='zcat')
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **preFilter** (unicode string; defaults to None) -- Shell command to
+  pipe the input through before passing it on to the grammar.
+  Classical examples include zcat or bzcat, but you can commit
+  arbitrary shell atrocities here.
+* **topIgnoredLines** (integer; defaults to '0') -- Skip this many
+  lines at the top of each source file.
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **col** (mapping; the value is the element content, the key is in
+  the  'key' (or, equivalently, key) attribute) -- Mapping of source
+  keys to column ranges.
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element contextGrammar
+''''''''''''''''''''''
+
+A grammar for web inputs.
+
+These are almost exclusively in InputDDs.  They hold InputKeys
+defining what they take from the context.
+
+For DBCores, the InputDDs are generally defined implicitely
+via CondDescs.  Thus, only for other cores will you ever need
+to bother with ContextGrammars (unless you're going for special
+effects).
+
+The source tokens for context grammars are dictionaries; these
+are either typed dictionaries from nevow, where the values
+usually are atomic, or, preferably, the dictionaries of lists
+from request.args.
+
+ContextGrammars only yield rows if there's a rowKey defined.
+In that case, an outer join of all other parameters is returned;
+with rowKey defined, the input keys are obtained from the table's
+columns.
+
+In normal usage, they just yield a single parameter row,
+corresponding to the source dictionary possibly completed with
+defaults, where non-requried input keys get None defaults where not
+given.  Missing required parameters yield errors.
+
+Since most VO protocols require case-insensitive matching of parameter
+names, matching of input key names and the keys of the input dictionary
+is attempted first literally, then disregarding case.
+
+contextGrammar
+Atomic Children
+...............
+
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **inputTable** (id reference; defaults to <Not given/empty>) -- The
+  table that is to be built using this grammar
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **rejectExtras** (boolean; defaults to 'False') -- If true, the
+  grammar will reject extra input parameters.  Note that for form-
+  based services, there *are* extra parameters not declared in the
+  services' input tables.  Right now, contextGrammar does not ignore
+  those.
+* **rowKey** (unicode string; defaults to <Not given/empty>) -- The
+  name of a key that is used to generate rows from the input
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* inputKeys (contains `Element inputKey`_ and may be repeated zero or
+  more times) -- Input keys this context grammar should parse.  These
+  must not be given if there is an input table defined.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element csvGrammar
+''''''''''''''''''
+
+A grammar that uses python's csv module to parse files.
+
+Note that these grammars by default interpret the first line of
+the input file as the column names.  When your files don't follow
+that convention, you *must* give names (as in ``names='raj2000,
+dej2000, magV'``), or you'll lose the first line and have silly
+column names.
+
+CSVGrammars currently do not support non-ASCII inputs.
+Contact the authors if you need that.
+
+csvGrammar
+Atomic Children
+...............
+
+* **delimiter** (unicode string; defaults to ',') -- CSV delimiter
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **gunzip** (boolean; defaults to 'False') -- Unzip sources while
+  reading? (Deprecated, use preFilter='zcat')
+* **names** (Comma-separated list of strings; defaults to None) --
+  Names for the parsed fields, in sequence of the comma separated
+  values.  The default is to read the field names from the first line
+  of the csv file.  You can use macros here, e.g.,
+  \\colNames{someTable}.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **preFilter** (unicode string; defaults to None) -- Shell command to
+  pipe the input through before passing it on to the grammar.
+  Classical examples include zcat or bzcat, but you can commit
+  arbitrary shell atrocities here.
+* **strip** (boolean; defaults to 'False') -- If True, whitespace
+  immediately following a delimiter is ignored.
+* **topIgnoredLines** (integer; defaults to '0') -- Skip this many
+  lines at the top of each source file.
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element customGrammar
+'''''''''''''''''''''
+
+A Grammar with a user-defined row iterator taken from a module.
+
+See the `Writing Custom Grammars`_ (in the reference manual) for details.
+
+customGrammar
+Atomic Children
+...............
+
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **isDispatching** (boolean; defaults to 'False') -- Is this a
+  dispatching grammar (i.e., does the row iterator return pairs of
+  role, row rather than only rows)?
+* **module** (unicode string; defaults to <Undefined>) -- Path to
+  module containing your row iterator.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element dictlistGrammar
+'''''''''''''''''''''''
+
+A grammar that "parses" from lists of dicts.
+
+Actually, it will just return the dicts as they are passed.  This is
+mostly useful internally, though it might come in handy in custom code.
+
+dictlistGrammar
+Atomic Children
+...............
+
+* **asPars** (boolean; defaults to 'False') -- Just return the first
+  item of the list as parameters row and exit?
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element directGrammar
+'''''''''''''''''''''
+
+A user-defined external grammar.
+
+See the separate document on user-defined code on more on direct grammars.
+
+Also note the program gavomkboost that can help you generate core for
+the C boosters used by direct grammars.
+
+directGrammar
+Atomic Children
+...............
+
+* **autoNull** (unicode string; defaults to None) -- Use this string
+  as general NULL value (when reading from plain text).
+* **cBooster** (unicode string; defaults to <Undefined>) -- resdir-
+  relative path to the booster C source.
+* **customFlags** (unicode string; defaults to '') -- Pass these flags
+  to the C compiler when building the booster.
+* **extension** (integer; defaults to '1') -- For FITS table boosters,
+  get the table from this extension.
+* **gzippedInput** (boolean; defaults to 'False') -- Pipe gzip before
+  booster? (will not work for FITS)
+* **ignoreBadRecords** (boolean; defaults to 'False') -- Let booster
+  ignore invalid records?
+* **preFilter** (unicode string; defaults to None) -- Pipe input
+  through this program before handing it to the booster; this string
+  is shell-expanded (will not work for FITS).
+* **recordSize** (integer; defaults to '4000') -- For bin boosters,
+  read this many bytes to make up a record; for line-based boosters,
+  this is the maximum length of an input line.
+* **splitChar** (unicode string; defaults to '|') -- For split
+  boosters, use this as the separator.
+* **type** (One of: bin, fits, col, split; defaults to 'col') -- Make
+  code for a booster parsing by column indices (col), by splitting
+  along separators (split), by reading fixed-length binary records
+  (bin), for from FITS binary tables (fits).
+
+Structure Children
+..................
+
+* mapKeys (contains `Element mapKeys`_) -- For a FITS booster, map DB
+  table column names to FITS column names (e.g., if the FITS table
+  name flx is to end up in the DB column flux, say flux:flx).
+
+Element embeddedGrammar
+'''''''''''''''''''''''
+
+A Grammar defined by a code application.
+
+To define this grammar, write a ProcApp iterator leading to code yielding
+row dictionaries.  The grammar input is available as self.sourceToken;
+for normal grammars within data elements, that would be a fully
+qualified file name.
+
+The proc app body actually is the iterRows method of a row iterator
+(see API docs).
+
+This could look like this, when the grammar input is some iterable::
+
+  <embeddedGrammar>
+    <iterator>
+      <setup>
+        <code>
+          testData = "a"*1024
+        </code>
+      </setup>
+      <code>
+        for i in self.sourceToken:
+          yield {'index': i, 'data': testData}
+      </code>
+    </iterator>
+  </embeddedGrammar>
+
+embeddedGrammar
+Atomic Children
+...............
+
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **isDispatching** (boolean; defaults to 'False') -- Is this a
+  dispatching grammar (i.e., does the row iterator return pairs of
+  role, row rather than only rows)?
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* iterator (contains `Element iterator`_) -- Code yielding row
+  dictionaries
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element fitsProdGrammar
+'''''''''''''''''''''''
+
+A grammar that returns FITS-headers as dictionaries.
+
+This is the grammar you want when one FITS file corresponds to one
+row in the destination table.
+
+The keywords of the grammar record are the cards in the primary
+header (or some other hdu using the same-named attribute).  "-" in
+keywords is replaced with an underscore for easier @-referencing.
+You can use a mapKeys element to effect further name cosmetics.
+
+This grammar should handle compressed FITS images transparently if
+set qnd="False".  This means that you will essentially get the readers
+from the second extension for those even if you left hdu="0".
+
+The original header is preserved as the value of the header\_ key.  This
+is mainly intended for use WCS use, as in ``pywcs.WCS(@header_)``.
+
+If you have more complex structures in your FITS files, you can get access
+to the pyfits HDU using the hdusField attribute.  With
+``hdusField="_H"``, you could say things like ``@_H[1].data[10][0]``
+to get the first data item in the tenth row in the second HDU.
+
+fitsProdGrammar
+Atomic Children
+...............
+
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **hdu** (integer; defaults to '0') -- Take the header from this HDU.
+  You must say qnd='False' for this to take effect.
+* **hdusField** (unicode string; defaults to None) -- If set, the
+  complete pyfits HDU list for the FITS file is returned in this
+  grammar field.
+* **maxHeaderBlocks** (integer; defaults to '40') -- Stop looking for
+  FITS END cards and raise an error after this many blocks. You may
+  need to raise this for people dumping obscene amounts of data or
+  history into headers.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **qnd** (boolean; defaults to 'True') -- Use a hack to read the FITS
+  header more quickly.  This only works for the primary HDU
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* mapKeys (contains `Element mapKeys`_) -- Prescription for how to map
+  header keys to grammar dictionary keys
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element fitsTableGrammar
+''''''''''''''''''''''''
+
+A grammar parsing from FITS tables.
+
+fitsTableGrammar result in typed records, i.e., values normally come
+in the types they are supposed to have.  Of course, that won't work
+for datetimes, STC-S regions, and the like.
+
+The keys of the result dictionaries are simpily the names given in
+the FITS.
+
+fitsTableGrammar
+Atomic Children
+...............
+
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **hdu** (integer; defaults to '1') -- Take the data from this
+  extension (primary=0). Tabular data typically resides in the first
+  extension.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element freeREGrammar
+'''''''''''''''''''''
+
+A grammar allowing "free" regular expressions to parse a document.
+
+Basically, you give a rowProduction to match individual records in the
+document.  All matches of rowProduction will then be matched with
+parseRE, which in turn must have named groups.  The dictionary from
+named groups to their matches makes up the input row.
+
+For writing the parseRE, we recommend writing an element, using a
+CDATA construct, and taking advantage of python's "verbose" regular
+expressions.  Here's an example::
+
+  <parseRE><![CDATA[(?xsm)^name::(?P<name>.*)
+    ^query::(?P<query>.*)
+    ^description::(?P<description>.*)\.\.
+  ]]></parseRE>
+
+freeREGrammar
+Atomic Children
+...............
+
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **ignoreJunk** (boolean; defaults to 'False') -- Ignore everything
+  outside of the row production
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **parseRE** (unicode string; defaults to <Undefined>) -- RE
+  containing named groups matching a record
+* **rowProduction** (unicode string; defaults to '(?m)^.+$\\n') -- RE
+  matching a complete record.
+* **stripTokens** (boolean; defaults to 'False') -- Strip whitespace
+  from result tokens?
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element iterator
+''''''''''''''''
+
+A definition of an iterator of a grammar.
+
+The code defined here becomes the _iterRows method of a 
+grammar.common.RowIterator class.  This means that you can
+access self.grammar (the parent grammar; you can use this to transmit
+properties from the RD to your function) and self.sourceToken (whatever
+gets passed to parse()).
+
+iterator
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element keyValueGrammar
+'''''''''''''''''''''''
+
+A grammar to parse key-value pairs from files.
+
+The default assumes one pair per line, with # comments and = as
+separating character.
+
+yieldPairs makes the grammar return an empty docdict
+and {"key":, "value":} rowdicts.
+
+Whitespace around key and value is ignored.
+
+keyValueGrammar
+Atomic Children
+...............
+
+* **commentPattern** (unicode string; defaults to '(?m)#.*') -- A
+  regular expression describing comments.
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **kvSeparators** (unicode string; defaults to ':=') -- Characters
+  accepted as separators between key and value
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **pairSeparators** (unicode string; defaults to '\n') -- Characters
+  accepted as separators between pairs
+* **yieldPairs** (boolean; defaults to 'False') -- Yield key-value
+  pairs instead of complete records?
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* mapKeys (contains `Element mapKeys`_) -- Mappings to rename the keys
+  coming from the source files.  Use this, in particular, if the keys
+  are not valid python identifiers.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element mapKeys
+'''''''''''''''
+
+Mapping of names, specified in long or short forms.
+
+mapKeys is necessary in grammars like keyValueGrammar or fitsProdGrammar.
+In these, the source files themselves give key names.  Within the GAVO
+DC, keys are required to be valid python identifiers (i.e., match
+``[A-Za-z\_][A-Za-z\_0-9]*``).  If keys coming in do not have this form, 
+mapping can force proper names.
+
+mapKeys could also be used to make incoming names more suitable for
+matching with shell patterns (like in rowmaker idmaps).
+
+mapKeys
+Atomic Children
+...............
+
+* Character content of the element (defaulting to '') -- Simple
+  mappings in the form<dest>:<src>{,<dest>:<src>}
+
+Other Children
+..............
+
+* **map** (mapping; the key is the element content, the value is in
+  the 'key' (or, equivalently, dest) attribute) -- Map source names
+  given in content to the name given in dest.
+
+Element mySQLDumpGrammar
+''''''''''''''''''''''''
+
+A grammar pulling information from MySQL dump files.
+
+WARNING: This is a quick hack.  If you want/need it, please contact the
+authors.
+
+At this point this is nothing but an ugly RE mess with lots of assumptions
+about the dump file that's easily fooled.  Also, the entire dump file
+will be pulled into memory.
+
+Since grammar semantics cannot do anything else, this will always only
+iterate over a single table.  This currently is fixed to the first,
+but it's conceivable to make that selectable.
+
+Database NULLs are already translated into Nones.
+
+In other words: It might do for simple cases.  If you have something else,
+improve this or complain to the authors.
+
+mySQLDumpGrammar
+Atomic Children
+...............
+
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **gunzip** (boolean; defaults to 'False') -- Unzip sources while
+  reading? (Deprecated, use preFilter='zcat')
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **preFilter** (unicode string; defaults to None) -- Shell command to
+  pipe the input through before passing it on to the grammar.
+  Classical examples include zcat or bzcat, but you can commit
+  arbitrary shell atrocities here.
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element nullGrammar
+'''''''''''''''''''
+
+A grammar that never returns any rows.
+
+nullGrammar
+Atomic Children
+...............
+
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element pdsGrammar
+''''''''''''''''''
+
+A grammar that returns labels of PDS documentes as rowdicts
+
+PDS is the file format of the Planetary Data System; the labels
+are quite like, but not quite like FITS headers.
+
+Extra care needs to be taken here since the values in the rawdicts
+can be complex objects (e.g., other labels).  It's likely that you
+will need constructs like ``@IMAGE["KEY"]``.
+
+Current versions of PyPDS also don't parse the values.  This is
+particularly insiduous because general strings are marked with " in PDS.
+When mapping those, you'll probably want a @KEY.strip('"').
+
+You'll need PyPDS to use this; there's no Debian package for that yet,
+so you'll have to do a source install from
+git://github.com/RyanBalfanz/PyPDS.git
+
+pdsGrammar
+Atomic Children
+...............
+
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* mapKeys (contains `Element mapKeys`_) -- Prescription for how to map
+  labels keys to grammar dictionary keys
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element reGrammar
+'''''''''''''''''
+
+A grammar that builds rowdicts from records and fields specified
+via REs separating them.
+
+There is also a simple facility for "cleaning up" records.  This can be
+used to remove standard shell-like comments; use 
+``recordCleaner="(?:#.*)?(.*)"``.
+
+reGrammar
+Atomic Children
+...............
+
+* **commentPat** (unicode string; defaults to None) -- RE inter-record
+  material to be ignored (note: make this match the entire comment, or
+  you'll get random mess from partly-matched comments.  Use
+  '(?m)^#.*$' for beginning-of-line hash-comments.
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **fieldSep** (unicode string; defaults to '\\s+') -- RE for
+  separating two fields in a record.
+* **gunzip** (boolean; defaults to 'False') -- Unzip sources while
+  reading? (Deprecated, use preFilter='zcat')
+* **lax** (boolean; defaults to 'False') -- allow more or less fields
+  in source records than there are names
+* **names** (Comma-separated list of strings; defaults to '') -- Names
+  for the parsed fields, in matching sequence.  You can use macros
+  here, e.g., \\colNames{someTable}.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **preFilter** (unicode string; defaults to None) -- Shell command to
+  pipe the input through before passing it on to the grammar.
+  Classical examples include zcat or bzcat, but you can commit
+  arbitrary shell atrocities here.
+* **recordCleaner** (unicode string; defaults to None) -- A regular
+  expression matched against each record. The matched groups in this
+  RE are joined by blanks and used as the new pattern.  This can be
+  used for simple cleaning jobs; However, records not matching
+  recordCleaner are rejected.
+* **recordSep** (unicode string; defaults to '\n') -- RE for
+  separating two records in the source.
+* **stopPat** (unicode string; defaults to None) -- Stop parsing when
+  a record *matches* this RE (this is for skipping non-data footers
+* **topIgnoredLines** (integer; defaults to '0') -- Skip this many
+  lines at the top of each source file.
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element rowfilter
+'''''''''''''''''
+
+A generator for rows coming from a grammar.
+
+Rowfilters receive rows (i.e., dictionaries) as yielded by a grammar
+under the name row.  Additionally, the embedding row iterator is
+available under the name rowIter.
+
+Macros are expanded within the embedding grammar.
+
+The procedure definition *must* result in a generator, i.e., there must
+be at least one yield; in general, this will typically be a ``yield row``,
+but a rowfilter may swallow or create as many rows as desired.
+
+If you forget to have a yield in the rowfilter source, you'll get a
+"NoneType is not iterable" error that's a bit hard to understand.
+
+Here, you can only access whatever comes from the grammar.  You can
+access grammar keys in late parameters as row[key] or, if key is 
+like an identifier, as @key.
+
+rowfilter
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element rowsetGrammar
+'''''''''''''''''''''
+
+A grammar handling sequences of tuples.
+
+To add semantics to the field, it must know the "schema" of the
+data.  This is defined via the table it is supposed to get the input
+from.
+
+This grammar probably is only useful for internal purposes.
+
+rowsetGrammar
+Atomic Children
+...............
+
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **fieldsFrom** (id reference; defaults to <Undefined>) -- the table
+  defining the columns in the tuples.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element sourceFields
+''''''''''''''''''''
+
+A procedure application that returns a dictionary added to all 
+incoming rows.
+
+Use this to programmatically provide information that can be computed
+once but that is then added to all rows coming from a single source, usually
+a file.  This could be useful to add information on the source of a
+record or the like.
+
+The code must return a dictionary.  The source that is about to be parsed is
+passed in as sourceToken.  When parsing from files, this simply is the file
+name.  The data the rows will be delivered to is available as "data", which
+is useful for adding or retrieving meta information.
+
+sourceFields
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element voTableGrammar
+''''''''''''''''''''''
+
+A grammar parsing from VOTables.
+
+Currently, the PARAM fields are ignored, only the data rows are
+returned.
+
+voTableGrammars result in typed records, i.e., values normally come
+in the types they are supposed to have.
+
+voTableGrammar
+Atomic Children
+...............
+
+* **enc** (unicode string; defaults to None) -- Encoding of strings
+  coming in from source.
+* **gunzip** (boolean; defaults to 'False') -- Unzip sources while
+  reading?
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions for ignoring
+  certain input records.  These triggers drop an input record
+  entirely.  If you feed multiple tables and just want to drop a row
+  from a specific table, you can use ignoreOn in a rowmaker.
+* rowfilters (contains `Element rowfilter`_ and may be repeated zero
+  or more times) -- Row filters for this grammar.
+* sourceFields (contains `Element sourceFields`_) -- Code returning a
+  dictionary of values added to all returned rows.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro decapitalize`_, `Macro fullDLMetaURL`_, `Macro fullDLURL`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPreviewPath`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+

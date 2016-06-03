@@ -1,1 +1,848 @@
-d
+SystemTables
+============
+dc.authors
+''''''''''
+
+Defined in //services
+
+A table that contains the (slightly processed) creator.name metadata
+from published services. It is used by the shipped templates of the
+root pages.
+
+Manipulate through gavo pub; to remove entries from this table, remove
+the publication element of the service or table in question and re-run
+gavo pub on the resource descriptor.
+
+**sourceRD**
+  (text) -- Id of the RD (essentially, the inputsDir-relative path,
+  with the .rd cut off).
+**resId**
+  (text) -- Id of the service, data or table within the RD. Together
+  with the RD id, this uniquely identifies the resource to DaCHS.
+**author**
+  (unicode) -- An author name taken from creator.name; DaCHS assumes
+  this to be in the form Last, I.
+
+dc.datalinkjobs
+'''''''''''''''
+
+Defined in //datalink
+
+A table managing datalink jobs submitted asynchronously (the dlasync
+renderer)
+
+**jobId**
+  (text) -- Internal id of the job. At the same time, uwsDir-relative
+  name of the job directory.
+**phase**
+  (text) -- The state of the job.
+**executionDuration**
+  (integer) -- Job time limit
+**destructionTime**
+  (timestamp) -- Time at which the job, including ancillary data, will
+  be deleted
+**owner**
+  (text) -- Submitter of the job, if verified
+**parameters**
+  (text) -- Pickled representation of the parameters (except uploads)
+**runId**
+  (text) -- User-chosen run Id
+**startTime**
+  (timestamp) -- UTC job execution started
+**endTime**
+  (timestamp) -- UTC job execution finished
+**error**
+  (text) -- some suitable representation an error that has occurred
+  while executing the job (null means no error information has been
+  logged)
+**pid**
+  (integer) -- A unix pid to kill to make the job stop
+
+dc.groups
+'''''''''
+
+Defined in //users
+
+Assignment of users to groups.
+
+Conceptually, each user has an associated group of the same name. A
+user always is a member of her group. Other users can be added to that
+group, essentially as in the classic Unix model.
+
+Manipulate this table through gavo admin addtogroup and gavo admin
+delfromgroup.
+
+**username**
+  (text) -- Name of the user belonging to the group
+**groupname**
+  (text) -- Name of the group
+
+dc.interfaces
+'''''''''''''
+
+Defined in //services
+
+A table that has "interfaces", i.e., actual URLs under which services
+are accessible. This is in a separate table, as services can have
+multiple interfaces (e.g., SCS and form).
+
+Manipulate through gavo pub; to remove entries from this table, remove
+the publication element of the service or table in question and re-run
+gavo pub on the resource descriptor.
+
+**sourceRD**
+  (text) -- Id of the RD (essentially, the inputsDir-relative path,
+  with the .rd cut off).
+**resId**
+  (text) -- Id of the service, data or table within the RD. Together
+  with the RD id, this uniquely identifies the resource to DaCHS.
+**accessURL**
+  (text) -- The URL this service with the given renderer can be
+  accessed under.
+**referenceURL**
+  (text) -- The URL this interface is explained at. In DaCHS, as in
+  VOResource, this column should actually be in dc.resources, but we
+  don't consider that wart bad enough to risk any breakage.
+**browseable**
+  (boolean) -- True if this interface can sensibly be operated with a
+  web browser (e.g., form, but not scs.xml; browseable service
+  interfaces are eligible for being put below the 'Use this service
+  with your browser' button on the service info page.
+**renderer**
+  (text) -- The renderer used for this interface.
+
+dc.metastore
+''''''''''''
+
+Defined in //dc_tables
+
+A table for storing all kinds of key-value pairs. Key starting with an
+underscore are for use by user RDs.
+
+Only one pair per key is supported, newer keys overwrite older ones.
+
+Currently, this is only used for schemaversion, the version of the
+DaCHS system tables as used by gavo upgrade to figure out what to
+change. gavo upgrade manages this.
+
+From your code, you can use base.getDBMeta(key) and
+base.setDBMeta(connection, key, value) to put persistent,
+string-valued metadata in here; if you use this, would you tell us
+your use case?
+
+**"key"**
+  (text) -- A key; everything that starts with an underscore is user
+  defined.
+**"value"**
+  (text) -- A value; no serialization format is defined here, but you
+  are encouraged to use python literals for non-strings.
+
+dc.products
+'''''''''''
+
+Defined in //products
+
+The products table keeps information on "products", i.e. datasets
+delivered to the users.
+
+It is normally fed through the products#define rowfilter and a mixin
+like products#table (or other mixins using it like siap#pgs or
+ssap#mixc).
+
+/getproducts inspects this table before handing out data to enforce
+embargoes and similar restrictions, and this is also where it figures
+out where to go for previews.
+
+**accref**
+  (text) -- Access key for the data
+**owner**
+  (text) -- Owner of the data
+**embargo**
+  (date) -- Date the data will become/became public
+**mime**
+  (text) -- MIME type of the file served
+**accessPath**
+  (text) -- Inputs-relative filesystem path to the file
+**sourceTable**
+  (text) -- Name of table containing metadata
+**preview**
+  (text) -- Location of a preview; this can be NULL if no preview is
+  available, 'AUTO' if DaCHS is supposed to try and make its own
+  previews based on MIME guessing, or a file name, or an URL.
+**datalink**
+  (text) -- A fully qualified URL of a datalink document for this
+  dataset. This is to allow the global datalink service (sitting on
+  the ~ resource and used by obscore) to forward datalink requests
+  globally.
+**preview_mime**
+  (text) -- MIME type of a preview (if any)
+
+dc.res_dependencies
+'''''''''''''''''''
+
+Defined in //services
+
+An RD-level map of dependencies, meaning that before generating
+resource records from rd, requisite should be imported.
+
+This is managed by gavo pub and used in the OAI-PMH interface.
+
+**rd**
+  (text) -- id of an RD
+**prereq**
+  (text) -- id of an RD that should be imported before records from rd
+  are generated.
+**sourceRD**
+  (text) -- id of the RD that introduced this dependency
+
+dc.resources
+''''''''''''
+
+Defined in //services
+
+The table of published "resources" (i.e., services, tables, data
+collections) within this data center. There are separate tables of the
+interfaces these resources have, their authors, subjects, and the sets
+they belong to.
+
+Manipulate through gavo pub; to remove entries from this table, remove
+the publication element of the service or table in question and re-run
+gavo pub on the resource descriptor.
+
+**sourceRD**
+  (text) -- Id of the RD (essentially, the inputsDir-relative path,
+  with the .rd cut off).
+**resId**
+  (text) -- Id of the service, data or table within the RD. Together
+  with the RD id, this uniquely identifies the resource to DaCHS.
+**shortName**
+  (text) -- The content of the service's shortName metadata. This is
+  not currently used by the root pages delivered with DaCHS, so this
+  column essentially is ignored.
+**title**
+  (text) -- The content of the service's title metadata (gavo pub will
+  fall back to the resource's title if the service doesn't have a
+  description of its own).
+**description**
+  (text) -- The content of the service's description metadata (gavo
+  pub will fall back to the resource's description if the service
+  doesn't have a description of its own).
+**owner**
+  (text) -- NULL for public services, otherwise whatever is in
+  limitTo. The root pages delivered with DaCHS put a [P] in front of
+  services with a non-NULL owner.
+**dateUpdated**
+  (timestamp) -- Date of last update on the resource itself (i.e., run
+  of gavo imp).
+**recTimestamp**
+  (timestamp) -- UTC of gavo publish run on the source RD
+**deleted**
+  (boolean) -- True if the service is deleted. On deletion, services
+  are not removed from the resources and sets tables so the OAI-PMH
+  service can notify incremental harvesters that a resource is gone.
+**ivoid**
+  (text) -- The full ivo-id of the resource. This is usually
+  ivo://auth/rdid/frag but may be overridden (you should probably not
+  create records for which you are not authority, but we do not
+  enforce that any more).
+**authors**
+  (text) -- Resource authors in source sequence
+
+dc.resources_join
+'''''''''''''''''
+
+Defined in //services
+
+A join of resources, interfaces, and sets used internally.
+
+**sourceRD**
+  (text) -- Id of the RD (essentially, the inputsDir-relative path,
+  with the .rd cut off).
+**resId**
+  (text) -- Id of the service, data or table within the RD. Together
+  with the RD id, this uniquely identifies the resource to DaCHS.
+**title**
+  (text) -- The content of the service's title metadata (gavo pub will
+  fall back to the resource's title if the service doesn't have a
+  description of its own).
+**description**
+  (text) -- The content of the service's description metadata (gavo
+  pub will fall back to the resource's description if the service
+  doesn't have a description of its own).
+**owner**
+  (text) -- NULL for public services, otherwise whatever is in
+  limitTo. The root pages delivered with DaCHS put a [P] in front of
+  services with a non-NULL owner.
+**dateUpdated**
+  (timestamp) -- Date of last update on the resource itself (i.e., run
+  of gavo imp).
+**recTimestamp**
+  (timestamp) -- UTC of gavo publish run on the source RD
+**deleted**
+  (boolean) -- True if the service is deleted. On deletion, services
+  are not removed from the resources and sets tables so the OAI-PMH
+  service can notify incremental harvesters that a resource is gone.
+**accessURL**
+  (text) -- The URL this service with the given renderer can be
+  accessed under.
+**referenceURL**
+  (text) -- The URL this interface is explained at. In DaCHS, as in
+  VOResource, this column should actually be in dc.resources, but we
+  don't consider that wart bad enough to risk any breakage.
+**browseable**
+  (boolean) -- True if this interface can sensibly be operated with a
+  web browser (e.g., form, but not scs.xml; browseable service
+  interfaces are eligible for being put below the 'Use this service
+  with your browser' button on the service info page.
+**renderer**
+  (text) -- The renderer used for this interface.
+**setName**
+  (text) -- Name of an OAI set.
+**ivoid**
+  (text) -- The full ivo-id of the resource. This is usually
+  ivo://auth/rdid/frag but may be overridden (you should probably not
+  create records for which you are not authority, but we do not
+  enforce that any more).
+
+dc.sets
+'''''''
+
+Defined in //services
+
+A table that contains set membership of published resources. For
+DaCHS, the sets ivo_managed ("publish to the VO") and local ("show on
+a generated root page" if using one of the shipped root pages) have a
+special role.
+
+Manipulate through gavo pub; to remove entries from this table, remove
+the publication element of the service or table in question and re-run
+gavo pub on the resource descriptor.
+
+**sourceRD**
+  (text) -- Id of the RD (essentially, the inputsDir-relative path,
+  with the .rd cut off).
+**resId**
+  (text) -- Id of the service, data or table within the RD. Together
+  with the RD id, this uniquely identifies the resource to DaCHS.
+**setName**
+  (text) -- Name of an OAI set.
+**renderer**
+  (text) -- The renderer used for the publication belonging to this
+  set. Typically, protocol renderers (e.g., scs.xml) will be used in
+  VO publications, whereas form and friends might be both in local and
+  ivo_managed
+**deleted**
+  (boolean) -- True if the service is deleted. On deletion, services
+  are not removed from the resources and sets tables so the OAI-PMH
+  service can notify incremental harvesters that a resource is gone.
+
+dc.subjects
+'''''''''''
+
+Defined in //services
+
+A table that contains the subject metadata for published services. It
+is used by the shipped templates of the root pages ("...by subject").
+
+Manipulate through gavo pub; to remove entries from this table, remove
+the publication element of the service or table in question and re-run
+gavo pub on the resource descriptor.
+
+**sourceRD**
+  (text) -- Id of the RD (essentially, the inputsDir-relative path,
+  with the .rd cut off).
+**resId**
+  (text) -- Id of the service, data or table within the RD. Together
+  with the RD id, this uniquely identifies the resource to DaCHS.
+**subject**
+  (text) -- A subject heading. Terms should ideally come from the IVOA
+  thesaurus.
+
+dc.subjects_join
+''''''''''''''''
+
+Defined in //services
+
+A join of resources, subjects, and sets used internally.
+
+**subject**
+  (text) -- A subject heading. Terms should ideally come from the IVOA
+  thesaurus.
+**sourceRD**
+  (text) -- Id of the RD (essentially, the inputsDir-relative path,
+  with the .rd cut off).
+**resId**
+  (text) -- Id of the service, data or table within the RD. Together
+  with the RD id, this uniquely identifies the resource to DaCHS.
+**title**
+  (text) -- The content of the service's title metadata (gavo pub will
+  fall back to the resource's title if the service doesn't have a
+  description of its own).
+**owner**
+  (text) -- NULL for public services, otherwise whatever is in
+  limitTo. The root pages delivered with DaCHS put a [P] in front of
+  services with a non-NULL owner.
+**accessURL**
+  (text) -- The URL this service with the given renderer can be
+  accessed under.
+**referenceURL**
+  (text) -- The URL this interface is explained at. In DaCHS, as in
+  VOResource, this column should actually be in dc.resources, but we
+  don't consider that wart bad enough to risk any breakage.
+**browseable**
+  (boolean) -- True if this interface can sensibly be operated with a
+  web browser (e.g., form, but not scs.xml; browseable service
+  interfaces are eligible for being put below the 'Use this service
+  with your browser' button on the service info page.
+**setName**
+  (text) -- Name of an OAI set.
+**ivoid**
+  (text) -- The full ivo-id of the resource. This is usually
+  ivo://auth/rdid/frag but may be overridden (you should probably not
+  create records for which you are not authority, but we do not
+  enforce that any more).
+
+dc.tablemeta
+''''''''''''
+
+Defined in //dc_tables
+
+A table mapping table names and schemas to the resource descriptors
+they come from and whether they are open to ADQL queries.
+
+This is used wherever DaCHS needs to go from a database name to the
+resource description, e.g., when generating tableinfo.
+
+The table is maintained through gavo imp; to force things out of here,
+there's gavo drop (for RDs; use -f if the RD is gone or meoved away)
+or gavo purge (for single tables).
+
+**tableName**
+  (text) -- Fully qualified table name
+**sourceRD**
+  (text) -- Id of the resource descriptor containing the table's
+  definition
+**tableDesc**
+  (text) -- Description of the table content
+**resDesc**
+  (text) -- Description of the resource this table is part of
+**adql**
+  (boolean) -- True if this table may be accessed using ADQL
+
+dc.users
+''''''''
+
+Defined in //users
+
+Users known to the data center, together with their credentials.
+
+Right now, DaCHS only supports user/password. Note that passwords are
+currently stored in cleartext, so do discourage your users from using
+valuable passwords here (whether you explain to them that DaCHS so far
+only provides "mild security" is up to you).
+
+Manipulate this table through gavo admin adduser, gavo admin deluser,
+and gavo admin listusers.
+
+**username**
+  (text) -- Name of the user.
+**password**
+  (text) -- Password in clear text.
+**remarks**
+  (text) -- Free text mainly intended to explain what the user is
+  supposed to be/do
+
+ivoa.ObsCore
+''''''''''''
+
+Defined in //obscore
+
+The IVOA-defined obscore table, containing generic metadata for
+datasets within this datacenter.
+
+**dataproduct_type**
+  (text) -- High level scientific classification of the data product,
+  taken from an enumeration
+**dataproduct_subtype**
+  (text) -- Data product specific type
+**calib_level**
+  (smallint) -- Amount of data processing that has been applied to the
+  data
+**obs_collection**
+  (text) -- Name of a data collection (e.g., project name) this data
+  belongs to
+**obs_id**
+  (text) -- Unique identifier for an observation
+**obs_title**
+  (text) -- Free-from title of the data set
+**obs_publisher_did**
+  (text) -- Dataset identifier assigned by the publisher.
+**obs_creator_did**
+  (text) -- Dataset identifier assigned by the creator.
+**access_url**
+  (text) -- The URL at which to obtain the data set.
+**access_format**
+  (text) -- MIME type of the resource at access_url
+**access_estsize**
+  (bigint) -- Estimated size of data product
+**target_name**
+  (text) -- Object a targeted observation targeted
+**target_class**
+  (text) -- Class of the target object (star, QSO, ...; use Simbad
+  object classification http://simbad.u-strasbg.fr/simbad/sim-
+  display?data=otypes if at all possible)
+**s_ra**
+  (double precision) -- RA of (center of) observation, ICRS
+**s_dec**
+  (double precision) -- Dec of (center of) observation, ICRS
+**s_fov**
+  (double precision) -- Approximate spatial extent for the region
+  covered by the observation
+**s_region**
+  (spoly) -- Region covered by the observation, as a polygon
+**s_resolution**
+  (double precision) -- Best spatial resolution within the data set
+**t_min**
+  (double precision) -- Lower bound of times represented in the data
+  set, as MJD
+**t_max**
+  (double precision) -- Upper bound of times represented in the data
+  set, as MJD
+**t_exptime**
+  (real) -- Total exporure time
+**t_resolution**
+  (real) -- Minimal significant time interval along the time axis
+**em_min**
+  (double precision) -- Minimal wavelength represented within the data
+  set
+**em_max**
+  (double precision) -- Maximal wavelength represented within the data
+  set
+**em_res_power**
+  (double precision) -- Spectral resolving power delta lambda/lamda
+**o_ucd**
+  (text) -- UCD for the product's observable
+**pol_states**
+  (text) -- List of polarization states in the data set
+**facility_name**
+  (text) -- Name of the facility at which data was taken
+**instrument_name**
+  (text) -- Name of the instrument that produced the data
+
+ivoa._obscoresources
+''''''''''''''''''''
+
+Defined in //obscore
+
+This table contains the SQL fragments that make up this
+installation's ivoa.obscore view. Whenever a participating table is
+re-made, the view definition is renewed with a statement made up of a
+union of all sqlFragments present in this table.
+
+Manipulate this table through gavo imp on tables that have an obscore
+mixin, or by dropping RDs or purging tables that are part of obscore.
+
+**tableName**
+  (text) --
+**sqlFragment**
+  (text) --
+
+ivoa.emptyobscore
+'''''''''''''''''
+
+Defined in //obscore
+
+An empty table having all columns of the obscore table. Useful
+internally, and sometimes for tricky queries.
+
+**dataproduct_type**
+  (text) -- High level scientific classification of the data product,
+  taken from an enumeration
+**dataproduct_subtype**
+  (text) -- Data product specific type
+**calib_level**
+  (smallint) -- Amount of data processing that has been applied to the
+  data
+**obs_collection**
+  (text) -- Name of a data collection (e.g., project name) this data
+  belongs to
+**obs_id**
+  (text) -- Unique identifier for an observation
+**obs_title**
+  (text) -- Free-from title of the data set
+**obs_publisher_did**
+  (text) -- Dataset identifier assigned by the publisher.
+**obs_creator_did**
+  (text) -- Dataset identifier assigned by the creator.
+**access_url**
+  (text) -- The URL at which to obtain the data set.
+**access_format**
+  (text) -- MIME type of the resource at access_url
+**access_estsize**
+  (bigint) -- Estimated size of data product
+**target_name**
+  (text) -- Object a targeted observation targeted
+**target_class**
+  (text) -- Class of the target object (star, QSO, ...; use Simbad
+  object classification http://simbad.u-strasbg.fr/simbad/sim-
+  display?data=otypes if at all possible)
+**s_ra**
+  (double precision) -- RA of (center of) observation, ICRS
+**s_dec**
+  (double precision) -- Dec of (center of) observation, ICRS
+**s_fov**
+  (double precision) -- Approximate spatial extent for the region
+  covered by the observation
+**s_region**
+  (spoly) -- Region covered by the observation, as a polygon
+**s_resolution**
+  (double precision) -- Best spatial resolution within the data set
+**t_min**
+  (double precision) -- Lower bound of times represented in the data
+  set, as MJD
+**t_max**
+  (double precision) -- Upper bound of times represented in the data
+  set, as MJD
+**t_exptime**
+  (real) -- Total exporure time
+**t_resolution**
+  (real) -- Minimal significant time interval along the time axis
+**em_min**
+  (double precision) -- Minimal wavelength represented within the data
+  set
+**em_max**
+  (double precision) -- Maximal wavelength represented within the data
+  set
+**em_res_power**
+  (double precision) -- Spectral resolving power delta lambda/lamda
+**o_ucd**
+  (text) -- UCD for the product's observable
+**pol_states**
+  (text) -- List of polarization states in the data set
+**facility_name**
+  (text) -- Name of the facility at which data was taken
+**instrument_name**
+  (text) -- Name of the instrument that produced the data
+
+tap_schema.columns
+''''''''''''''''''
+
+Defined in //tap
+
+Columns in tables available for ADQL querying.
+
+**table_name**
+  (text) -- Fully qualified table name
+**column_name**
+  (text) -- Column name
+**description**
+  (unicode) -- Brief description of column
+**unit**
+  (text) -- Unit in VO standard format
+**ucd**
+  (text) -- UCD of column if any
+**utype**
+  (text) -- Utype of column if any
+**datatype**
+  (text) -- ADQL datatype
+**"size"**
+  (integer) -- Length of variable length datatypes
+**principal**
+  (integer) -- Is column principal?
+**indexed**
+  (integer) -- Is there an index on this column?
+**std**
+  (integer) -- Is this a standard column?
+**sourceRD**
+  (text) -- Id of the originating rd (local information)
+
+tap_schema.groups
+'''''''''''''''''
+
+Defined in //tap
+
+Columns that are part of groups within tables available for ADQL
+querying.
+
+**table_name**
+  (text) -- Fully qualified table name
+**column_name**
+  (text) -- Name of a column belonging to the group
+**column_utype**
+  (text) -- utype the column withing the group
+**group_name**
+  (text) -- Name of the group
+**group_utype**
+  (text) -- utype of the group
+**sourceRD**
+  (text) -- Id of the originating rd (local information)
+
+tap_schema.key_columns
+''''''''''''''''''''''
+
+Defined in //tap
+
+Columns participating in foreign key relationships between tables
+available for ADQL querying.
+
+**key_id**
+  (text) -- Key identifier from TAP_SCHEMA.keys
+**from_column**
+  (text) -- Key column name in the from table
+**target_column**
+  (text) -- Key column in the target table
+**sourceRD**
+  (text) -- Id of the originating rd (local information)
+
+tap_schema.keys
+'''''''''''''''
+
+Defined in //tap
+
+Foreign key relationships between tables available for ADQL querying.
+
+**key_id**
+  (text) -- Unique key identifier
+**from_table**
+  (text) -- Fully qualified table name
+**target_table**
+  (text) -- Fully qualified table name
+**description**
+  (text) -- Description of this key
+**utype**
+  (text) -- Utype of this key
+**sourceRD**
+  (text) -- Id of the originating rd (local information)
+
+tap_schema.schemas
+''''''''''''''''''
+
+Defined in //tap
+
+Schmemas containing tables available for ADQL querying.
+
+**schema_name**
+  (text) -- Fully qualified schema name
+**description**
+  (text) -- Brief description of the schema
+**utype**
+  (text) -- utype if schema corresponds to a data model
+
+tap_schema.supportedmodels
+''''''''''''''''''''''''''
+
+Defined in //tap
+
+Standard data models supported by this service.
+
+This is a non-standard tap_schema table used by DaCHS in the creation
+of registry records. It is manipulated through gavo imp on tables with
+supportsModel and supportsModelURI properties.
+
+**sourceRD**
+  (text) -- Id of the originating rd (local information)
+**dmname**
+  (text) -- Human-readable name of the data model
+**dmivorn**
+  (text) -- IVORN of the data model
+
+tap_schema.tables
+'''''''''''''''''
+
+Defined in //tap
+
+Tables available for ADQL querying.
+
+**schema_name**
+  (text) -- Fully qualified schema name
+**table_name**
+  (text) -- Fully qualified table name
+**table_type**
+  (text) -- One of: table, view
+**description**
+  (text) -- Brief description of the table
+**utype**
+  (text) -- utype if the table corresponds to a data model
+**sourceRD**
+  (text) -- Id of the originating rd (local information)
+
+tap_schema.tapjobs
+''''''''''''''''''
+
+Defined in //tap
+
+A non-standard (and not tap-accessible) table used for managing
+asynchronous TAP jobs. It is manipulated through TAP job creation and
+destruction internally. Under very special circumstances, operators
+can use the gavo admin cleantap command to purge jobs from this table.
+
+Note that such jobs have corresponding directories in
+$STATEDIR/uwsjobs, which will be orphaned if this table is manipulated
+through SQL.
+
+**jobId**
+  (text) -- Internal id of the job. At the same time, uwsDir-relative
+  name of the job directory.
+**phase**
+  (text) -- The state of the job.
+**executionDuration**
+  (integer) -- Job time limit
+**destructionTime**
+  (timestamp) -- Time at which the job, including ancillary data, will
+  be deleted
+**owner**
+  (text) -- Submitter of the job, if verified
+**parameters**
+  (text) -- Pickled representation of the parameters (except uploads)
+**runId**
+  (text) -- User-chosen run Id
+**startTime**
+  (timestamp) -- UTC job execution started
+**endTime**
+  (timestamp) -- UTC job execution finished
+**error**
+  (text) -- some suitable representation an error that has occurred
+  while executing the job (null means no error information has been
+  logged)
+**pid**
+  (integer) -- A unix pid to kill to make the job stop
+
+uws.userjobs
+''''''''''''
+
+Defined in //uws
+
+The jobs table for user-defined UWS jobs. As the jobs can come from
+all kinds of services, this must encode the jobClass (as the id of the
+originating service).
+
+**jobId**
+  (text) -- Internal id of the job. At the same time, uwsDir-relative
+  name of the job directory.
+**phase**
+  (text) -- The state of the job.
+**executionDuration**
+  (integer) -- Job time limit
+**destructionTime**
+  (timestamp) -- Time at which the job, including ancillary data, will
+  be deleted
+**owner**
+  (text) -- Submitter of the job, if verified
+**parameters**
+  (text) -- Pickled representation of the parameters (except uploads)
+**runId**
+  (text) -- User-chosen run Id
+**startTime**
+  (timestamp) -- UTC job execution started
+**endTime**
+  (timestamp) -- UTC job execution finished
+**error**
+  (text) -- some suitable representation an error that has occurred
+  while executing the job (null means no error information has been
+  logged)
+**pid**
+  (integer) -- A unix pid to kill to make the job stop
+**jobClass**
+  (text) -- Key for the job class to use here. This is, as an
+  implementation detail, simply the cross-id of the service processing
+  this.

@@ -1,1 +1,549 @@
+Renderers
+=========
 The admin Renderer
+''''''''''''''''''
+
+*This renderer's parameter style is "clear".*
+
+A renderer allowing to block and/or reload services.
+
+This renderer could really be attached to any service since
+it does not call it, but it usually lives on //services/overview.  
+It will always require authentication.
+
+It takes the id of the RD to administer from the path segments
+following the renderer name.
+
+By virtue of builtin vanity, you can reach the admin renderer
+at /seffe, and thus you can access /seffe/foo/q to administer
+the foo/q RD.
+
+
+The api Renderer
+''''''''''''''''
+
+*This renderer's parameter style is "dali".*
+
+A renderer that works like a VO standard renderer but that doesn't
+actually follow a given protocol.
+
+Use this for improvised APIs.  The default output format is a VOTable,
+and the errors come in VOSI VOTables.  The renderer does, however,
+evaluate basic DALI parameters.  You can declare that by
+including <FEED source="//pql#DALIPars"/> in your service.
+
+These will return basic serice metadata if passed MAXREC=0.
+
+
+The availability Renderer
+'''''''''''''''''''''''''
+
+*This renderer's parameter style is "clear".  This is an unchecked renderer.*
+
+A renderer for a VOSI availability endpoint.
+
+An endpoint with this renderer is automatically registered for
+every service.  The answers can be configured using the admin
+renderer.
+
+
+The capabilities Renderer
+'''''''''''''''''''''''''
+
+*This renderer's parameter style is "clear".  This is an unchecked renderer.*
+
+A renderer for a VOSI capability endpoint.
+
+An endpoint with this renderer is automatically registered for
+every service.  The responses contain information on what renderers
+("interfaces") are available for a service and what properties they have.
+
+
+The custom Renderer
+'''''''''''''''''''
+
+*This renderer's parameter style is "clear".*
+
+A renderer defined in a python module.
+
+To define a custom renderer write a python module and define a
+class MainPage inheriting from gavo.web.ServiceBasedPage.
+
+This class basically is a nevow resource, i.e., you can define
+docFactory, locateChild, renderHTTP, and so on.
+
+To use it, you have to define a service with the resdir-relative path
+to the module in the customPage attribute and probably a nullCore.  You
+also have to allow the custom renderer (but you may have other renderers,
+e.g., static).
+
+If the custom page is for display in web browsers, define a
+class method isBrowseable(cls, service) returning true.  This is
+for the generation of links like "use this service from your browser"
+only; it does not change the service's behaviour with your renderer.
+
+There should really be a bit more docs on this, but alas, there's
+none as yet.
+
+
+The dlasync Renderer
+''''''''''''''''''''
+
+*This renderer's parameter style is "pql".*
+
+A renderer for asynchronous datalink.
+
+
+The dlget Renderer
+''''''''''''''''''
+
+*This renderer's parameter style is "clear".*
+
+A renderer for data processing by datalink cores.
+
+This must go together with a datalink core, nothing else will do.
+
+This renderer will actually produce the processed data.  It must be
+complemented by the dlmeta renderer which allows retrieving metadata.
+
+
+The dlmeta Renderer
+'''''''''''''''''''
+
+*This renderer's parameter style is "clear".*
+
+A renderer for data processing by datalink cores.
+
+This must go together with a datalink core, nothing else will do.
+
+This renderer will return the links and services applicable to
+one or more pubDIDs.
+
+See `Datalink Cores`_ for more information.
+
+
+The docform Renderer
+''''''''''''''''''''
+
+*This renderer's parameter style is "form".*
+
+A renderer displaying a form and delivering core's result as
+a document.
+
+The core must return a pair of mime-type and content; on errors,
+the form is redisplayed.
+
+This is mainly useful with custom cores doing weird things.  This
+renderer will not work with dbBasedCores and similar.
+
+
+The examples Renderer
+'''''''''''''''''''''
+
+*This renderer's parameter style is "clear".  This is an unchecked renderer.*
+
+A renderer for examples for service usage.
+
+This renderer formats _example meta items in its service.  Its output
+is XHTML compliant to VOSI examples; clients can parse it to, 
+for instance, fill forms for service operation or display examples
+to users.
+
+The examples make use of RDFa to convey semantic markup.  To see
+what kind of semantics is contained, try 
+http://www.w3.org/2012/pyRdfa/Overview.html and feed it the
+example URL of your service.
+
+The default content of _example is ReStructuredText, and really, not much
+else  makes sense.  An example for such a meta item can be viewed by
+executing ``gavo admin dumpDF //userconfig``, in the tapexamples STREAM.
+
+To support annotation of things within the example text, DaCHS
+defines several RST extensions, both interpreted text roles (used like
+``:role-name:`content with blanks```) and custom directives (used
+to mark up blocks introduced by a single line like
+``.. directive-name ::`` (the blanks before and after the
+directive name are significant).
+
+Here's the custom interpreted text roles:
+
+* *dl-id*: An publisher DID a service returns data for (used in 
+  datalink examples)
+* *taptable*: A (fully qualified) table name a TAP example query is
+  (particularly) relevant for; in HTML, this is also a link
+  to the table description.
+* *genparam*: A "generic parameter" as defined by DALI.  The values
+  of these have the form param(value), e.g., :genparam:\`POS(32,4)\`.
+  Right now, not parantheses are allowed in the value.  Complain
+  if this bites you.
+
+These are the custom directives:
+
+* *tapquery*: The query discussed in a TAP example.
+
+
+The external Renderer
+'''''''''''''''''''''
+
+*This renderer's parameter style is "clear".*
+
+A renderer redirecting to an external resource.
+
+These try to access an external publication on the parent service
+and ask it for an accessURL.  If it doesn't define one, this will
+lead to a redirect loop.
+
+In the DC, external renderers are mainly used for registration of
+third-party browser-based services.
+
+
+The fixed Renderer
+''''''''''''''''''
+
+*This renderer's parameter style is "clear".*
+
+A renderer that renders a single template.
+
+Use something like ``<template key="fixed">res/ft.html</template>``
+in the enclosing service to tell the fixed renderer where to get
+this template from.
+
+In the template, you can fetch parameters from the URL using 
+something like ``<n:invisible n:data="parameter FOO" n:render="string"/>``;
+you can also define new render and data functions on the
+service using customRF and customDF.
+
+This is mainly for applet/browser app support; See the
+specview.html or voplot.html templates as an example.  This is
+the place to add further render or data function for programs
+like those.
+
+Built-in services for such browser apps should go through the //run 
+RD.
+
+
+The form Renderer
+'''''''''''''''''
+
+*This renderer's parameter style is "form".*
+
+The "normal" renderer within DaCHS for web-facing services.
+
+It will display a form and allow outputs in various formats.
+
+It also does error reporting as long as that is possible within
+the form.
+
+
+The get Renderer
+''''''''''''''''
+
+*This renderer's parameter style is "clear".*
+
+The renderer used for delivering products.
+
+This will only work with a ProductCore since the resulting
+data set has to contain products.Resources.  Thus, you probably
+will not use this in user RDs.
+
+
+The info Renderer
+'''''''''''''''''
+
+*This renderer's parameter style is "clear".  This is an unchecked renderer.*
+
+A renderer showing all kinds of metadata on a service.
+
+This renderer produces the default referenceURL page.  To change its
+appearance, override the serviceinfo.html template.
+
+
+The logout Renderer
+'''''''''''''''''''
+
+*This renderer's parameter style is "clear".  This is an unchecked renderer.*
+
+logs users out.
+
+With a valid authorization header, this emits a 401 unauthorized,
+without one, it displays a logout page.
+
+
+The mimg.jpeg Renderer
+''''''''''''''''''''''
+
+*This renderer's parameter style is "form".*
+
+A machine version of the JpegRenderer -- no vizier expressions,
+hardcoded parameters, plain text errors.
+
+This should not have been part of DaCHS proper.  It will be removed.
+
+
+The mupload Renderer
+''''''''''''''''''''
+
+*This renderer's parameter style is "form".*
+
+A renderer allowing for updates to individual records using file 
+uploads.
+
+The difference to Uploader is that no form-redisplay will be done.
+All errors are reported through HTTP response codes and text strings.
+It is likely that this renderer will change and/or go away.
+
+
+The pubreg.xml Renderer
+'''''''''''''''''''''''
+
+*This renderer's parameter style is "clear".*
+
+A renderer that works with registry.oaiinter to provide an OAI-PMH
+interface.
+
+The core is expected to return a stanxml tree.
+
+
+The qp Renderer
+'''''''''''''''
+
+*This renderer's parameter style is "clear".*
+
+The Query Path renderer extracts a query argument from the query path.
+
+Basically, whatever segments are left after the path to the renderer
+are taken and fed into the service.  The service must cooperate by
+setting a queryField property which is the key the parameter is assigned
+to.
+
+QPRenderers cannot do forms, of course, but they can nicely share a
+service with the form renderer.
+
+To adjust the results' appreance, you can override resultline (for when
+there's just one result row) and resulttable (for when there is more
+than one result row) templates.
+
+
+The rdinfo Renderer
+'''''''''''''''''''
+
+*This renderer's parameter style is "clear".*
+
+A renderer for displaying various properties about a resource descriptor.
+
+This renderer could really be attached to any service since
+it does not call it, but it usually lives on //services/overview.
+
+By virtue of builtin vanity, you can reach the rdinfo renderer
+at /browse, and thus you can access /browse/foo/q to view the RD infos.
+This is the form used by table registrations.
+
+
+The scs.xml Renderer
+''''''''''''''''''''
+
+*This renderer's parameter style is "pql".*
+
+
+A renderer for the Simple Cone Search protocol.
+
+These do their error signaling in the value attribute of an
+INFO child of RESOURCE.
+
+You must set the following metadata items on services using
+this renderer if you want to register them:
+
+* testQuery.ra, testQuery.dec -- A position for which an object is present
+  within 0.001 degrees.
+
+
+The siap.xml Renderer
+'''''''''''''''''''''
+
+*This renderer's parameter style is "pql".*
+
+A renderer for a the Simple Image Access Protocol.
+
+These have errors in the content of an info element, and they support
+metadata queries.
+
+For registration, services using this renderer must set the following
+metadata items:
+
+  - sia.type -- one of Cutout, Mosaic, Atlas, Pointed, see SIAP spec
+
+You should set the following metadata items:
+
+  - testQuery.pos.ra, testQuery.pos.dec -- RA and Dec for a query that
+    yields at least one image
+  - testQuery.size.ra, testQuery.size.dec -- RoI extent for a query that 
+    yields at least one image.
+
+You can set the following metadata items (there are defaults on them
+that basically communicate there are no reasonable limits on them):
+
+ - sia.maxQueryRegionSize.(long|lat)
+ - sia.maxImageExtent.(long|lat)
+ - sia.maxFileSize
+ - sia.maxRecord (default dalHardLimit global meta)
+
+
+The siap2.xml Renderer
+''''''''''''''''''''''
+
+*This renderer's parameter style is "dali".*
+
+A renderer for SIAPv2.
+
+In general, if you want a SIAP2 service, you'll need something like the
+obscore view in the underlying table.
+
+
+The slap.xml Renderer
+'''''''''''''''''''''
+
+*This renderer's parameter style is "pql".*
+
+A renderer for the simple line access protocol SLAP.
+
+For registration, you must set the following metadata on services 
+using the slap.xml renderer:
+
+There's two mandatory metadata items for these:
+
+- slap.dataSource -- one of observational/astrophysical, 
+  observational/laboratory, or theoretical 
+- slap.testQuery -- parameters that lead to a non-empty response.
+  The way things are written in DaCHS, MAXREC=1 should in general
+  work.
+
+
+The soap Renderer
+'''''''''''''''''
+
+*This renderer's parameter style is "clear".*
+
+A renderer that receives and formats SOAP messages.
+
+This is for remote procedure calls.  In particular, the renderer takes
+care that you can obtain a WSDL definition of the service by
+appending ?wsdl to the access URL.
+
+
+The ssap.xml Renderer
+'''''''''''''''''''''
+
+*This renderer's parameter style is "pql".*
+
+A renderer for the simple spectral access protocol.
+
+For registration, you must set the following metadata on services 
+using the ssap.xml renderer:
+
+ - ssap.dataSource -- survey, pointed, custom, theory, artificial
+ - ssap.testQuery -- a query string that returns some data; REQUEST=queryData
+   is added automatically
+
+Other SSA metadata includes:
+
+ - ssap.creationType -- archival, cutout, filtered, mosaic,
+   projection, spectralExtraction, catalogExtraction (defaults to archival)
+ - ssap.complianceLevel -- set to "query" when you don't deliver
+   SDM compliant spectra; otherwise don't say anything, DaCHS will fill
+   in the right value.
+
+Services with this renderer can have a datalink property; if present, it
+must point to a datalink service producing SDM-compliant spectra; this
+is for doing cutouts and similar.
+
+Services with ssap cores may also have a defaultRequest property.  By
+default, requests without a REQUEST parameter will be rejected.  If
+you set defaultRequest to querydata, such request will be processed
+as if REQUEST were given.
+
+
+The static Renderer
+'''''''''''''''''''
+
+*This renderer's parameter style is "clear".*
+
+A renderer that just hands through files.
+
+The standard operation here is to set a staticData property pointing
+to a resdir-relative directory used to serve files for.  Indices
+for directories are created.
+
+You can define a root resource by giving an indexFile property on
+the service.
+
+
+The tableMetadata Renderer
+''''''''''''''''''''''''''
+
+*This renderer's parameter style is "clear".  This is an unchecked renderer.*
+
+A renderer for a VOSI table metadata endpoint.
+
+An endpoint with this renderer is automatically registered for
+every service.  The responses contain information on the tables
+exposed by a given service.
+
+
+The tableinfo Renderer
+''''''''''''''''''''''
+
+*This renderer's parameter style is "clear".  This is an unchecked renderer.*
+
+A renderer for displaying table information.
+
+It really doesn't use the underlying service, but conventionally,
+it is run on __system__/dc_tables/show.
+
+
+The tablenote Renderer
+''''''''''''''''''''''
+
+*This renderer's parameter style is "clear".  This is an unchecked renderer.*
+
+A renderer for displaying table notes.
+
+It takes a schema-qualified table name and a note tag in the segments.
+
+This does not use the underlying service, so it could and will run on
+any service.  However, you really should run it on __system__/dc_tables/show,
+and there's a built-in vanity name tablenote for this.
+
+
+The tap Renderer
+''''''''''''''''
+
+*This renderer's parameter style is "clear".*
+
+A renderer speaking all of TAP (including sync, async, and VOSI).
+
+Basically, this just dispatches to the sync and async resources.
+
+
+The upload Renderer
+'''''''''''''''''''
+
+*This renderer's parameter style is "form".*
+
+A renderer allowing for updates to individual records using file upload.
+
+This renderer exposes a form with a file widget.  It is likely that
+the interface will change.
+
+
+The uws.xml Renderer
+''''''''''''''''''''
+
+*This renderer's parameter style is "pql".*
+
+A renderer speaking UWS.
+
+This is for asynchronous exection of larger jobs.  Operators will normally
+use this together with a custom core or a python core.
+
+See `Custom UWSes`_ for details.
+

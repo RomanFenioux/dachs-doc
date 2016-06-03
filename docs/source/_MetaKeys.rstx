@@ -1,1 +1,258 @@
+MetaKeys
+========
 _example
+  A MetaValue to keep VOSI examples in.
+  
+  All of these must have a title, which is also used to generate
+  references.
+  
+  These also are in reStructuredText by default, and changing
+  that probably makes no sense at all, as these will always need
+  interpreted text roles for proper markup.
+  
+  Thus, the usual pattern here is::
+  
+    <meta name="_example" title="An example for _example">
+      See docs_
+  
+      .. _docs: http://docs.g-vo.org
+    </meta>
+  
+_news
+  A meta value representing a "news" items.
+  
+  The content is the body of the news.  In addition, they have
+  date, author, and role children.  In plain text, you would write::
+  
+    _news: Frobnicated the quux.
+    _news.author: MD
+    _news.date: 2009-03-06
+    _news.role: updated
+  
+  In XML, you would usually write::
+  
+    <meta name="_news" author="MD" date="2009-03-06">
+      Frobnicated the quux.
+    </meta>
+  
+  _news items become serialised into Registry records despite their
+  leading underscores.  role then becomes the date's role.    
+  
+_related
+  A meta value containing a link and optionally a title
+  
+  In plain text, this would look like
+  this::
+  
+    _related:http://foo.bar
+    _related.title: The foo page
+  
+  In XML, you can write::
+  
+      <meta name="_related" title="The foo page"
+        ivoId="ivo://bar.org/foo">http://foo.bar</meta>
+  
+  or, if you prefer::
+  
+    <meta name="_related">http://foo.bar
+       <meta name="title">The foo page</meta></meta>
+  
+  These values are used for _related (meaning "visible" links to other
+  services).
+  
+  For links within you data center, use the internallink macro, the argument
+  of which the the "path" to a resource, i.e. RD path/service/renderer;
+  we recommend to use the info renderer in such links as a rule.  This would
+  look like this::
+  
+    <meta name="_related" title="Aspec SSAP"
+      >\internallink{aspec/q/ssa/info}</meta>
+  
+  
+creator.logo
+  A MetaValue corresponding to a small image.
+  
+  These are rendered as little images in HTML.  In XML meta, you can
+  say::
+  
+    <meta name="_somelogo" type="logo">http://foo.bar/quux.png</meta>
+  
+derivedFrom
+  A meta value containing an ivo-id and a name of a related resource.
+  
+  These are intended for serviceFor, servedBy, derivedFrom,
+  mirrorOf, and relatedTo metas.  Plus, new and non-standard for
+  DocRegExt, uses.
+  
+  It should look like this::
+  
+    servedBy: GAVO TAP service
+    servedBy.ivoId: ivo://org.gavo.dc
+  
+  However, service attribute of data publications automatically sets
+  these metas, so typically you won't have to bother with those.
+  
+info
+  A meta value for info items in VOTables.
+  
+  In addition to the content (which should be rendered as the info element's
+  text content), it contains an infoName and an infoValue.
+  
+  They are only used internally in VOTable generation and might go away
+  without notice.
+  
+logo
+  A MetaValue corresponding to a small image.
+  
+  These are rendered as little images in HTML.  In XML meta, you can
+  say::
+  
+    <meta name="_somelogo" type="logo">http://foo.bar/quux.png</meta>
+  
+mirrorOf
+  A meta value containing an ivo-id and a name of a related resource.
+  
+  These are intended for serviceFor, servedBy, derivedFrom,
+  mirrorOf, and relatedTo metas.  Plus, new and non-standard for
+  DocRegExt, uses.
+  
+  It should look like this::
+  
+    servedBy: GAVO TAP service
+    servedBy.ivoId: ivo://org.gavo.dc
+  
+  However, service attribute of data publications automatically sets
+  these metas, so typically you won't have to bother with those.
+  
+note
+  A meta value representing a "note" item.
+  
+  This is like a footnote, typically on tables, and is rendered in table
+  infos.
+  
+  The content is the note body.  In addition, you want a tag child that
+  gives whatever the note is references as.  We recommend numbers.
+  
+  Contrary to other meta items, note content defaults to rstx format.
+  
+  Typically, this works with a column's note attribute.
+  
+  In XML, you would usually write::
+  
+    <meta name="note" tag="1">
+      Better ignore this.
+    </meta>
+  
+referenceURL
+  A meta value containing a link and optionally a title
+  
+  In plain text, this would look like
+  this::
+  
+    _related:http://foo.bar
+    _related.title: The foo page
+  
+  In XML, you can write::
+  
+      <meta name="_related" title="The foo page"
+        ivoId="ivo://bar.org/foo">http://foo.bar</meta>
+  
+  or, if you prefer::
+  
+    <meta name="_related">http://foo.bar
+       <meta name="title">The foo page</meta></meta>
+  
+  These values are used for _related (meaning "visible" links to other
+  services).
+  
+  For links within you data center, use the internallink macro, the argument
+  of which the the "path" to a resource, i.e. RD path/service/renderer;
+  we recommend to use the info renderer in such links as a rule.  This would
+  look like this::
+  
+    <meta name="_related" title="Aspec SSAP"
+      >\internallink{aspec/q/ssa/info}</meta>
+  
+  
+relatedTo
+  A meta value containing an ivo-id and a name of a related resource.
+  
+  These are intended for serviceFor, servedBy, derivedFrom,
+  mirrorOf, and relatedTo metas.  Plus, new and non-standard for
+  DocRegExt, uses.
+  
+  It should look like this::
+  
+    servedBy: GAVO TAP service
+    servedBy.ivoId: ivo://org.gavo.dc
+  
+  However, service attribute of data publications automatically sets
+  these metas, so typically you won't have to bother with those.
+  
+servedBy
+  A meta value containing an ivo-id and a name of a related resource.
+  
+  These are intended for serviceFor, servedBy, derivedFrom,
+  mirrorOf, and relatedTo metas.  Plus, new and non-standard for
+  DocRegExt, uses.
+  
+  It should look like this::
+  
+    servedBy: GAVO TAP service
+    servedBy.ivoId: ivo://org.gavo.dc
+  
+  However, service attribute of data publications automatically sets
+  these metas, so typically you won't have to bother with those.
+  
+serviceFor
+  A meta value containing an ivo-id and a name of a related resource.
+  
+  These are intended for serviceFor, servedBy, derivedFrom,
+  mirrorOf, and relatedTo metas.  Plus, new and non-standard for
+  DocRegExt, uses.
+  
+  It should look like this::
+  
+    servedBy: GAVO TAP service
+    servedBy.ivoId: ivo://org.gavo.dc
+  
+  However, service attribute of data publications automatically sets
+  these metas, so typically you won't have to bother with those.
+  
+source
+  A MetaValue that may contain bibcodes, which are rendered as links
+  into ADS.
+  
+uses
+  A meta value containing an ivo-id and a name of a related resource.
+  
+  These are intended for serviceFor, servedBy, derivedFrom,
+  mirrorOf, and relatedTo metas.  Plus, new and non-standard for
+  DocRegExt, uses.
+  
+  It should look like this::
+  
+    servedBy: GAVO TAP service
+    servedBy.ivoId: ivo://org.gavo.dc
+  
+  However, service attribute of data publications automatically sets
+  these metas, so typically you won't have to bother with those.
+  
+votlink
+  A MetaValue serialized into VOTable links (or, ideally,
+  analoguous constructs).
+  
+  This exposes the various attributes of VOTable LINKs as href
+  linkname, contentType, and role.  You cannot set ID here; if this ever
+  needs referencing, we'll need to think about it again.  
+  The href attribute is simply the content of our meta (since
+  there's no link without href), and there's never any content
+  in VOTable LINKs).
+  
+  You could thus say::
+  
+    votlink: http://docs.g-vo.org/DaCHS
+    votlink.role: doc
+    votlink.contentType: text/html
+    votlink.linkname: GAVO DaCHS documentation
+  

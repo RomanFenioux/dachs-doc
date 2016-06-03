@@ -1,1 +1,141 @@
+ActiveTags
+==========
 Element FEED
+''''''''''''
+
+An active tag that takes an event stream and replays the events,
+possibly filling variables.
+
+This element supports arbitrary attributes with unicode values.  These
+values are available as macros for replayed values.
+
+FEED
+Atomic Children
+...............
+
+* **source** (id reference; defaults to None) -- id of a stream to
+  replay
+
+Structure Children
+..................
+
+* edits (contains `Element EDIT`_ and may be repeated zero or more
+  times) -- Changes to be performed on the events played back.
+* events (contains `Element events`_) -- Alternatively to source, an
+  XML fragment to be replayed
+* prunes (contains `Element PRUNE`_ and may be repeated zero or more
+  times) -- Conditions for removing items from the playback stream.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro decapitalize`_, `Macro getConfig`_, `Macro internallink`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro schema`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element LFEED
+'''''''''''''
+
+A ReplayedEventStream that does not expand active tag macros.
+
+You only want this when embedding a stream into another stream
+that could want to expand the embedded macros.
+
+LFEED
+Atomic Children
+...............
+
+* **source** (id reference; defaults to None) -- id of a stream to
+  replay
+
+Structure Children
+..................
+
+* edits (contains `Element EDIT`_ and may be repeated zero or more
+  times) -- Changes to be performed on the events played back.
+* events (contains `Element events`_) -- Alternatively to source, an
+  XML fragment to be replayed
+* prunes (contains `Element PRUNE`_ and may be repeated zero or more
+  times) -- Conditions for removing items from the playback stream.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro decapitalize`_, `Macro getConfig`_, `Macro internallink`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro schema`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element LOOP
+''''''''''''
+
+An active tag that replays a feed several times, each time with
+different values.
+
+LOOP
+Atomic Children
+...............
+
+* **codeItems** (unicode string; defaults to None) -- A python
+  generator body that yields dictionaries that are then used as loop
+  items.  You can access the parse context as the context variable in
+  these code snippets.
+* **csvItems** (unicode string; defaults to None) -- The items to loop
+  over, in CSV-with-labels format.
+* **listItems** (unicode string; defaults to None) -- The items to
+  loop over, as space-separated single items.  Each item will show up
+  once, as 'item' macro.
+* **source** (id reference; defaults to None) -- id of a stream to
+  replay
+
+Structure Children
+..................
+
+* edits (contains `Element EDIT`_ and may be repeated zero or more
+  times) -- Changes to be performed on the events played back.
+* events (contains `Element events`_) -- Alternatively to source, an
+  XML fragment to be replayed
+* prunes (contains `Element PRUNE`_ and may be repeated zero or more
+  times) -- Conditions for removing items from the playback stream.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro decapitalize`_, `Macro getConfig`_, `Macro internallink`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro schema`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element NXSTREAM
+''''''''''''''''
+
+An event stream that records events, not expanding active tags.
+
+Normal event streams expand embedded active tags in place.  This is
+frequently what you want, but it means that you cannot, e.g., fill
+in loop variables through stream macros.
+
+With non-expanded streams, you can do that::
+
+  <NXSTREAM id="cols">
+    <LOOP listItems="\stuff">
+      <events>
+        <column name="\item"/>
+      </events>
+    </LOOP>
+  </NXSTREAM>
+  <table id="foo">
+    <FEED source="cols" stuff="x y"/>
+  </table>
+
+Note that the normal innermost-only rule for macro expansions
+within active tags does not apply for NXSTREAMS.  Macros expanded
+by a replayed NXSTREAM will be re-expanded by the next active
+tag that sees them (this is allow embedded active tags to use
+macros; you need to double-escape macros for them, of course).
+
+NXSTREAM
+Atomic Children
+...............
+
+* **doc** (unicode string; defaults to None) -- A description of this
+  stream (should be restructured text).
+
+Element STREAM
+''''''''''''''
+
+An active tag that records events as they come in.
+
+Their only direct effect is to leave a trace in the parser's id map.
+The resulting event stream can be played back later.
+
+STREAM
+Atomic Children
+...............
+
+* **doc** (unicode string; defaults to None) -- A description of this
+  stream (should be restructured text).
+

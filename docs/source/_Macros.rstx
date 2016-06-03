@@ -1,1 +1,543 @@
+Macros
+======
 Macro RSTcc0
+''''''''''''
+
+::
+
+  \RSTcc0{stuffDesignation}
+
+expands to a declaration that stuffDesignation is available under
+CC-0.
+
+This only works in reStructured text (though it's still almost
+readable as source).
+
+Available in `Element resource`_
+
+Macro RSTccby
+'''''''''''''
+
+::
+
+  \RSTccby{stuffDesignation}
+
+expands to a declaration that stuffDesignation is available under
+CC-BY.
+
+This only works in reStructured text (though it's still almost
+readable as source).
+
+Available in `Element resource`_
+
+Macro RSTservicelink
+''''''''''''''''''''
+
+::
+
+  \RSTservicelink{serviceId}{title=None}
+
+a link to an internal service; id is <rdId>/<serviceId>/<renderer>,
+title, if given, is the anchor text.
+
+The result is a link in the short form for restructured test.
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro RSTtable
+''''''''''''''
+
+::
+
+  \RSTtable{tableName}
+
+adds an reStructured test link to a tableName pointing to its table
+info.
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro colNames
+''''''''''''''
+
+::
+
+  \colNames
+
+returns an SQL-ready list of column names of this table.
+
+Available in `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element rowsetGrammar`_, `Element table`_, `Element voTableGrammar`_
+
+Macro curtable
+''''''''''''''
+
+::
+
+  \curtable
+
+returns the qualified name of the current table.
+
+Available in `Element inputTable`_, `Element outputTable`_, `Element table`_
+
+Macro decapitalize
+''''''''''''''''''
+
+::
+
+  \decapitalize{aString}
+
+returns aString with the first character lowercased.
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro dlMetaURI
+'''''''''''''''
+
+::
+
+  \dlMetaURI{dlId}
+
+returns a link to the datalink document for the current product.
+
+This assumes you're assinging standard pubDIDs (see also standardPubDID,
+which is used by this).
+
+dlId is the XML id of the datalink service, which is supposed to
+be in the sameRD as the rowmaker.
+
+Available in `Element rowmaker`_
+
+Macro docField
+''''''''''''''
+
+::
+
+  \docField{name}
+
+returns an expression giving the value of the column name in the 
+document row.
+
+Available in `Element rowmaker`_
+
+Macro fullDLMetaURL
+'''''''''''''''''''
+
+::
+
+  \fullDLMetaURL{dlService}
+
+like fullDLURL, except it points to the datalink metadata.
+
+This is intended for binding to //products#define's datalink
+parameter.
+
+If you need the value in a rowmaker, grab it from @prodtblDatalink.
+
+Available in `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element keyValueGrammar`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element rowsetGrammar`_, `Element voTableGrammar`_
+
+Macro fullDLURL
+'''''''''''''''
+
+::
+
+  \fullDLURL{dlService}
+
+returns a python expression giving a link pullling the standard 
+PubDID of the current source through the datalink service dlService.
+
+You would write \\fullDLURL{dlsvc} here, and the macro will expand into
+something like http://yourserver/currd/dlget?ID=ivo://whatever.
+
+dlService is the id of the datalink service in the current RD.
+
+Available in `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element keyValueGrammar`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element rowsetGrammar`_, `Element voTableGrammar`_
+
+Macro getConfig
+'''''''''''''''
+
+::
+
+  \getConfig{section}{name=None}
+
+the current value of configuration item {section}{name}.
+
+You can also only give one argument to access settings from the
+general section.
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro getParam
+''''''''''''''
+
+::
+
+  \getParam{parName}{default=''}
+
+returns the string representation of the parameter parName.
+
+This is the parameter as given in the table definition.  Any changes
+to an instance are not reflected here.
+
+If the parameter named does not exist, an empty string is returned.
+NULLs/Nones are rendered as NULL; this is mainly a convenience
+for obscore-like applications and should not be exploited otherwise,
+since it's ugly and might change at some point.
+
+If a default is given, it will be returned for both NULL and non-existing
+params.
+
+Available in `Element inputTable`_, `Element outputTable`_, `Element table`_
+
+Macro inputRelativePath
+'''''''''''''''''''''''
+
+::
+
+  \inputRelativePath{liberalChars='True'}
+
+returns an expression giving the current source's path
+relative to inputsDir
+
+liberalChars can be a boolean literal (True, False, etc); if false,
+a value error is raised if characters that will result in trouble
+with the product mixin are within the result path.
+
+In rowmakers fed by grammars with //products#define, better use
+@prodtblAccref.
+
+Available in `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element keyValueGrammar`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element voTableGrammar`_
+
+Macro inputSize
+'''''''''''''''
+
+::
+
+  \inputSize
+
+returns an expression giving the size of the current source.
+
+Available in `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element keyValueGrammar`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element voTableGrammar`_
+
+Macro internallink
+''''''''''''''''''
+
+::
+
+  \internallink{relPath}
+
+an absolute URL from a path relative to the DC root.
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro lastSourceElements
+''''''''''''''''''''''''
+
+::
+
+  \lastSourceElements{numElements}
+
+returns an expression calling rmkfuncs.lastSourceElements on
+the current input path.
+
+Available in `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element keyValueGrammar`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element voTableGrammar`_
+
+Macro magicEmpty
+''''''''''''''''
+
+::
+
+  \magicEmpty{val}
+
+returns __EMPTY__ if val is empty.
+
+This is necessary when feeding possibly empty params from mixin
+parameters (don't worry if you don't understand this).
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro metaString
+''''''''''''''''
+
+::
+
+  \metaString{metaKey}{default=None}
+
+the value of metaKey on the macro expander.
+
+This will raise an error when the meta Key is not available unless
+you give a default.
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro nameForUCD
+''''''''''''''''
+
+::
+
+  \nameForUCD{ucd}
+
+returns the (unique!) name of the field having ucd in this table.
+
+If there is no or more than one field with the ucd in this table,
+we raise a ValueError.
+
+Available in `Element inputTable`_, `Element outputTable`_, `Element table`_
+
+Macro nameForUCDs
+'''''''''''''''''
+
+::
+
+  \nameForUCDs{ucds}
+
+returns the (unique!) name of the field having one
+of ucds in this table.
+
+Ucds is a selection of ucds separated by vertical bars
+(|).  The rules for when this raises errors are so crazy
+you don't want to think about them.  This really is
+only intended for cases where "old" and "new" standards
+are to be supported, like with pos.eq.*;meta.main and
+POS_EQ_*_MAIN.
+
+If there is no or more than one field with the ucd in
+this table, we raise an exception.
+
+Available in `Element inputTable`_, `Element outputTable`_, `Element table`_
+
+Macro property
+''''''''''''''
+
+::
+
+  \property{propName}
+
+returns an expression giving the value of the property propName
+on the current DD.
+
+Available in `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element keyValueGrammar`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element voTableGrammar`_
+
+Macro qName
+'''''''''''
+
+::
+
+  \qName
+
+returns the qName of the table we are currently parsing into.
+
+Available in `Element inputTable`_, `Element outputTable`_, `Element rowmaker`_, `Element table`_
+
+Macro quote
+'''''''''''
+
+::
+
+  \quote{arg}
+
+returns the argument in quotes (with internal quotes backslash-escaped 
+if necessary).
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro rdId
+''''''''''
+
+::
+
+  \rdId
+
+the identifier of the current resource descriptor.
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro rdIdDotted
+''''''''''''''''
+
+::
+
+  \rdIdDotted
+
+the identifier for the current resource descriptor with slashes replaced
+with dots (so they work as the "host part" in URIs.
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro rootlessPath
+''''''''''''''''''
+
+::
+
+  \rootlessPath
+
+returns an expression giving the current source's path with 
+the resource descriptor's root removed.
+
+Available in `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element keyValueGrammar`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element voTableGrammar`_
+
+Macro rowsMade
+''''''''''''''
+
+::
+
+  \rowsMade
+
+returns an expression giving the number of records already
+returned by this row maker.
+
+This number excludes failed and skipped rows.
+
+Available in `Element rowmaker`_
+
+Macro rowsProcessed
+'''''''''''''''''''
+
+::
+
+  \rowsProcessed
+
+returns an expression giving the number of records already
+delivered by the grammar.
+
+Available in `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element keyValueGrammar`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element voTableGrammar`_
+
+Macro schema
+''''''''''''
+
+::
+
+  \schema
+
+the schema of the current resource descriptor.
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro sourceDate
+''''''''''''''''
+
+::
+
+  \sourceDate
+
+returns an expression giving the timestamp of the current source.
+
+Available in `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element keyValueGrammar`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element voTableGrammar`_
+
+Macro srcstem
+'''''''''''''
+
+::
+
+  \srcstem
+
+returns python code for the stem of the source file currently parsed in a rowmaker.
+
+Example: if you're currently parsing /tmp/foo.bar.gz, the stem is foo.
+
+Available in `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element keyValueGrammar`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element voTableGrammar`_
+
+Macro standardPreviewPath
+'''''''''''''''''''''''''
+
+::
+
+  \standardPreviewPath
+
+returns an expression for the standard path for a custom preview.
+
+This consists of resdir, the name of the previewDir property on the
+embedding DD, and the flat name of the accref (which this macro
+assumes to see in its namespace as accref; this is usually the
+case in //products#define, which is where this macro would typically be
+used).
+
+See the introduction to custom previews for details.
+
+Available in `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element keyValueGrammar`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element rowsetGrammar`_, `Element voTableGrammar`_
+
+Macro standardPubDID
+''''''''''''''''''''
+
+::
+
+  \standardPubDID
+
+returns the "standard publisher DID" for the current product.
+
+The publisher dataset identifier (PubDID) is important in protocols like
+SSAP and obscore.  If you use this macro, the PubDID will be your
+authority, the path compontent ~, and the current value of @prodtblAccref.
+It thus will only work where products#define (or a replacement) is in
+action.  If it isn't, a normal function call
+getStandardPubDID(\\\\inputRelativePath) would be an obvious alternative.
+
+You *can* of course define your PubDIDs in a different way.
+
+Available in `Element rowmaker`_
+
+Macro tablename
+'''''''''''''''
+
+::
+
+  \tablename
+
+returns the unqualified name of the current table.
+
+Available in `Element inputTable`_, `Element outputTable`_, `Element table`_
+
+Macro tablesForTAP
+''''''''''''''''''
+
+::
+
+  \tablesForTAP
+
+undocumented
+Available in `Element service`_
+
+Macro test
+''''''''''
+
+::
+
+  \test{*args}
+
+always "test macro expansion".
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro today
+'''''''''''
+
+::
+
+  \today
+
+today's date in ISO representation.
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro upper
+'''''''''''
+
+::
+
+  \upper{aString}
+
+returns aString uppercased.
+
+There's no guarantees for characters outside ASCII.
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+
+Macro urlquote
+''''''''''''''
+
+::
+
+  \urlquote{string}
+
+wraps urllib.quote.
+
+Available in `Element FEED`_, `Element LFEED`_, `Element LOOP`_, `Element binaryGrammar`_, `Element cdfHeaderGrammar`_, `Element columnGrammar`_, `Element contextGrammar`_, `Element csvGrammar`_, `Element customGrammar`_, `Element dictlistGrammar`_, `Element embeddedGrammar`_, `Element fitsProdGrammar`_, `Element fitsTableGrammar`_, `Element freeREGrammar`_, `Element inputTable`_, `Element keyValueGrammar`_, `Element mixinDef`_, `Element mySQLDumpGrammar`_, `Element nullGrammar`_, `Element outputTable`_, `Element pdsGrammar`_, `Element reGrammar`_, `Element resRec`_, `Element resource`_, `Element rowmaker`_, `Element rowsetGrammar`_, `Element service`_, `Element table`_, `Element voTableGrammar`_
+

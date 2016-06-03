@@ -1,2 +1,130 @@
+Streams
+=======
 //datalink#sdm_plainfluxcalib
+.............................
+
+A stream inserting a data function and its metadata generator to
+do select flux calibrations in SDM data.  This expects
+sdm_generate (or at least parameters.data as an SDM data instance)
+as the generating function within the datalink core.
+
+Clients can select "RELATIVE" as FLUXCALIB, which does a
+normalization to max(flux)=1 here.  Everything else is rejected
+right now.
+
+This probably is more an example of how to write such a thing
+then genuinely useful.
+
+
+//datalink#sdm_cutout
+.....................
+
+A stream inserting a data function and its metaMaker to
+do cutouts in SDM data. This expects sdm_generate (or at least
+parameters.data as an SDM data instance) as the generating function 
+within the datalink core.
+
+The cutout limits are always given in meters, regardless of
+the spectrum's actual units (as in SSAP's BAND parameter).
+
+
+//datalink#sdm_format
+.....................
+
+A formatter for SDM data, together with its input key
+for FORMAT.
+
+
+//datalink#fits_genKindPar
+..........................
+
+This stream should be included in FITS-handling datalink services;
+it adds parameter and code to just retrieve the FITS header to the
+core.
+
+For this to work as expected, it must be immediately before the
+formatter.
+
+//datalink#fits_genPixelPar
+...........................
+
+This stream should be included  in FITS-handling datalink services;
+it add parameters and code to perform cut-outs along pixel coordinates.
+
+
+//datalink#fits_standardDLFuncs
+...............................
+
+
+Pulls in all "standard" datalink functions for FITSes, including
+cutouts and header retrieval.
+
+You must give both an stcs attribute (for fits_makeWCSParams) and an
+accrefStart attribute (for fits_genDesc).  Both can be empty,
+however (but if you think you should be leaving them empty you
+should probably think again).
+
+Do *not* add quotes to them, even though the proc parameters
+have them; the STREAM already puts in single quotes.
+
+
+//datalink#fits_standardLambdaCutout
+....................................
+
+
+Adds metadata and processor for one axis containing wavelengths.
+
+(this could be extended to cover frequency and energy axis, I guess)
+
+To use this, give the fits axis containing the spectral coordinate
+in the spectralAxis attribute; if needed, you can override the
+unit in wavelengthUnit (if the unit in the header is somehow 
+bad or missing).
+
+
 //obscore#obscore-columns
+.........................
+
+
+The columns of a (standard) obscore table.  This can be used
+to define a "native" obscore table (as opposed to the more usual
+mixins below that expose standard products via obscore.
+
+Even if you are sure you want to do this, better ask again...
+
+
+//ssap#hcd_condDescs
+....................
+
+
+The full condDescs for matching HCD SSA services.
+
+
+//ssap#atomicCoords
+...................
+
+
+A stream for form-based service's VOTables to include simple
+RA and Dec rather than normal ssa_location.
+
+SSA services get that from the core and don't need this.
+
+
+//echelle#ssacols
+.................
+
+
+Additional columns for SSA metadata tables describing Echelle
+spectra.
+
+
+//scs#coreDescs
+...............
+
+
+This stream inserts three condDescs for SCS services on tables with
+pos.eq.(ra|dec).main columns; one producing the standard SCS RA, 
+DEC, and SR parameters, another creating input fields for human
+consumption, and finally MAXREC.
+
+

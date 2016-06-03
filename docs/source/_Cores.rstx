@@ -1,1 +1,1240 @@
+Cores
+=====
 Element adqlCore
+''''''''''''''''
+
+A core taking an ADQL query from its query argument and returning the
+result of that query in a standard table.
+
+Since the columns returned depend on the query, the outputTable of an
+ADQL core must not be defined.
+
+adqlCore
+Atomic Children
+...............
+
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element computedCore
+''''''''''''''''''''
+
+A core wrapping external applications.
+
+ComputedCores wrap command line tools taking command line arguments,
+reading from stdin, and outputting to stdout.
+
+The command line arguments are taken from the inputTable's parameters,
+stdin is created by serializing the inputTable's rows like they are 
+serialized for with the TSV output, except only whitespace is entered 
+between the values.
+
+The output is the primary table of parsing the program's output with
+the data child.
+
+While in principle more declarative than PythonCores, these days I'd
+say rather use one of those.
+
+computedCore
+Atomic Children
+...............
+
+* **computer** (unicode string; defaults to <Undefined>) -- Resdir-
+  relative basename of the binary doing the computation.  The standard
+  rules for cross-platform binary name determination apply.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+* resultParse (contains `Element data`_) -- Data descriptor to parse
+  the computer's output.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element coreProc
+''''''''''''''''
+
+A definition of a pythonCore's functionalty.
+
+This is a procApp complete with setup and code; you could inherit
+between these.
+
+coreProcs see the embedding service, the input table passed, and the
+query metadata as service, inputTable, and queryMeta, respectively.
+
+The core itself is available as self.
+
+coreProc
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element customCore
+''''''''''''''''''
+
+A wrapper around a core defined in a module.
+
+This core lets you write your own cores in modules.
+
+The module must define a class Core.  When the custom core is
+encountered, this class will be instanciated and will be used
+instead of the CustomCore, so your code should probably inherit 
+core.Core.
+
+See `Writing Custom Cores`_ for details.
+
+customCore
+Atomic Children
+...............
+
+* **module** (unicode string; defaults to <Undefined>) -- Path to the
+  module containing the core definition.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element dataFormatter
+'''''''''''''''''''''
+
+A procedure application that renders data in a processed service.
+
+These play the role of the renderer, which for datalink is ususally
+trivial.  They are supposed to take descriptor.data and return
+a pair of (mime-type, bytes), which is understood by most renderers.
+
+When no dataFormatter is given for a core, it will return descriptor.data
+directly.  This can work with the datalink renderer itself if 
+descriptor.data will work as a nevow resource (i.e., has a renderHTTP
+method, as our usual products do).  Consider, though, that renderHTTP
+runs in the main event loop and thus most not block for extended
+periods of time.
+
+The following names are available to the code:
+  - descriptor -- whatever the DescriptorGenerator returned
+  - args -- all the arguments that came in from the web.
+
+In addition to the usual names available to ProcApps, data formatters have:
+  - Page -- base class for resources with renderHTTP methods.
+  - IRequest -- the nevow interface to make Request objects with.
+  - File(path, type) -- if you just want to return a file on disk, pass 
+    its path and media type to File and return the result. 
+  - TemporaryFile(path, type) -- as File, but the disk file is unlinked 
+    after use
+
+dataFormatter
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element dataFunction
+''''''''''''''''''''
+
+A procedure application that generates or modifies data in a processed
+data service.
+
+All these operate on the data attribute of the product descriptor.
+The first data function plays a special role: It *must* set the data
+attribute (or raise some appropriate exception), or a server error will 
+be returned to the client.
+
+What is returned depends on the service, but typcially it's going to
+be a table or products.*Product instance.
+
+Data functions can shortcut if it's evident that further data functions
+can only mess up (i.e., if the do something bad with the data attribute);
+you should not shortcut if you just *think* it makes no sense to
+further process your output.
+
+To shortcut, raise either of FormatNow (falls though to the formatter,
+which is usually less useful) or DeliverNow (directly returns the
+data attribute; this can be used to return arbitrary chunks of data).
+
+The following names are available to the code:
+  - descriptor -- whatever the DescriptorGenerator returned
+  - args -- all the arguments that came in from the web.
+
+In addition to the usual names available to ProcApps, data functions have:
+  - FormatNow -- exception to raise to go directly to the formatter
+  - DeliverNow -- exception to raise to skip all further formatting
+    and just deliver what's currently in descriptor.data
+  - File(path, type) -- if you just want to return a file on disk, pass 
+    its path and media type to File and assign the result to 
+    descriptor.data.  
+  - TemporaryFile(path,type) -- as File, but the disk file is 
+    unlinked after use
+
+dataFunction
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element datalinkCore
+''''''''''''''''''''
+
+A core for processing datalink and processed data requests.
+
+The input table of this core is dynamically generated from its
+metaMakers; it makes no sense at all to try and override it.
+
+See `Datalink Cores`_ for more information.
+
+In contrast to "normal" cores, one of these is made (and destroyed)
+for each datalink request coming in.  This is because the interface
+of a datalink service depends on the request's value(s) of ID.
+
+The datalink core can produce both its own metadata and data generated.
+It is the renderer's job to tell them apart.
+
+datalinkCore
+Atomic Children
+...............
+
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* dataFormatter (contains `Element dataFormatter`_) -- Code that turns
+  descriptor.data into a nevow resource or a mime, content pair.  If
+  not given, the renderer will be returned descriptor.data itself
+  (which will probably not usually work).
+* dataFunctions (contains `Element dataFunction`_ and may be repeated
+  zero or more times) -- Code that generates of processes data for
+  this core.  The first of these plays a special role in that it must
+  set descriptor.data, the others need not do anything at all.
+* descriptorGenerator (contains `Element descriptorGenerator`_) --
+  Code that takes a PUBDID and turns it into a product descriptor
+  instance.  If not given, //datalink#fromStandardPubDID will be used.
+* inputKeys (contains `Element inputKey`_ and may be repeated zero or
+  more times) -- A parameter to one of the proc apps (data functions,
+  formatters) active in this datalink core; no specific relation
+  between input keys and procApps is supposed; all procApps are passed
+  all argments. Conventionally, you will write the input keys in front
+  of the proc apps that interpret them.
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* metaMakers (contains `Element metaMaker`_ and may be repeated zero
+  or more times) -- Code that takes a data descriptor and either
+  updates input key options or yields related data.
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element dbCore
+''''''''''''''
+
+A core performing database queries on one table or view.
+
+DBCores ask the service for the desired output schema and adapt their
+output.  The DBCore's output table, on the other hand, lists all fields 
+available from the queried table.
+
+dbCore
+Atomic Children
+...............
+
+* **distinct** (boolean; defaults to 'False') -- Add a 'distinct'
+  modifier to the query?
+* **groupBy** (unicode string; defaults to None) -- A group by clause.
+  You shouldn't generally need this, and if you use it, you must give
+  an outputTable to your core.
+* **limit** (integer; defaults to None) -- A pre-defined match limit
+  (suppresses DB options widget).
+* **namePath** (id reference; defaults to None) -- Id of an element
+  that will be used to located names in id references.  Defaults to
+  the queriedTable's id.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **queriedTable** (id reference; defaults to <Undefined>) -- A
+  reference to the table this core queries.
+* **sortKey** (unicode string; defaults to None) -- A pre-defined sort
+  order (suppresses DB options widget).  The sort key accepts multiple
+  columns, separated by commas.
+
+Structure Children
+..................
+
+* condDescs (contains `Element condDesc`_ and may be repeated zero or
+  more times) -- Descriptions of the SQL and input generating entities
+  for this core; if not given, they will be generated from the table
+  columns.
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element debugCore
+'''''''''''''''''
+
+a core that returns its arguments stringified in a table.
+
+You need to provide an external input tables for these.
+
+debugCore
+Atomic Children
+...............
+
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element descriptorGenerator
+'''''''''''''''''''''''''''
+
+A procedure application for making product descriptors for PUBDIDs
+
+A normal product descriptor contains basically what DaCHS' product
+table contains.  You could derive from protocols.datalink.ProductDescriptor,
+though, e.g., in the setup of this proc.
+
+The following names are available to the code:
+
+  - pubDID -- the pubDID to be resolved
+  - args -- all the arguments that came in from the web
+    (these should not ususally be necessary and are completely unparsed)
+
+If you made your pubDID using the ``getStandardPubDID`` rowmaker function,
+and you need no additional logic within the descriptor,
+the default (//datalink#fromStandardPubDID) should do.
+
+If you need to derive custom descriptor classes, you can see the base
+class under the name ProductDescriptor.
+
+descriptorGenerator
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element editCore
+''''''''''''''''
+
+A core that allows POSTing records into database tables.
+
+editCore
+Atomic Children
+...............
+
+* **namePath** (id reference; defaults to None) -- Id of an element
+  that will be used to located names in id references.  Defaults to
+  the queriedTable's id.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **queriedTable** (id reference; defaults to <Undefined>) --
+  Reference to the table to be edited
+
+Structure Children
+..................
+
+* condDescs (contains `Element condDesc`_ and may be repeated zero or
+  more times) -- Descriptions of the SQL and input generating entities
+  for this core; if not given, they will be generated from the table
+  columns.
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element fancyQueryCore
+''''''''''''''''''''''
+
+A core executing a pre-specified query with fancy conditions.
+
+Unless you select \*, you *must* define the outputTable here; 
+Weird things will happen if you don't.
+
+The queriedTable attribute is ignored.
+
+fancyQueryCore
+Atomic Children
+...............
+
+* **namePath** (id reference; defaults to None) -- Id of an element
+  that will be used to located names in id references.  Defaults to
+  the queriedTable's id.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **queriedTable** (id reference; defaults to <Undefined>) -- A
+  reference to the table this core queries.
+* **query** (unicode string; defaults to <Undefined>) -- The query to
+  execute.  It must contain exactly one %s where the generated where
+  clause is to be inserted.  Do not write WHERE yourself. All other
+  percents must be escaped by doubling them.
+
+Structure Children
+..................
+
+* condDescs (contains `Element condDesc`_ and may be repeated zero or
+  more times) -- Descriptions of the SQL and input generating entities
+  for this core; if not given, they will be generated from the table
+  columns.
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element fixedQueryCore
+''''''''''''''''''''''
+
+A core executing a predefined query.
+
+This usually is not what you want, unless you want to expose the current
+results of a specific query, e.g., for log or event data.
+
+fixedQueryCore
+Atomic Children
+...............
+
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **query** (unicode string; defaults to <Undefined>) -- The query to
+  be executed.  You must define the output fields in the core's output
+  table.  The query will be macro-expanded in the resource descriptor.
+* **timeout** (float; defaults to '15.0') -- Seconds until the query
+  is aborted
+* **writable** (boolean; defaults to 'False') -- Use a writable DB
+  connection?
+
+Structure Children
+..................
+
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element inputTable
+''''''''''''''''''
+
+an input table for a core.
+
+For the standard cores, these have no rows but only params, with the
+exception of ComputedCore, which can build program input from rows.
+
+Typically, however, the input table definition is made from a core's 
+condDescs and thus never explicitely defined.  In these cases, 
+adaptForRenderer becomes relevant.  This is for when one renderer, e.g.,
+form, needs to expose a different interface than another, e.g., a
+protocol-based renderer.  SCS is a good example, where the form renderer
+has a single argument for the position.
+
+inputTable
+Atomic Children
+...............
+
+* **adql** (boolean or 'hidden'; defaults to 'False') -- Should this
+  table be available for ADQL queries?  In addition to True/False,
+  this can also be 'hidden' for tables readable from the TAP machinery
+  but not published in the metadata; this is useful for, e.g., tables
+  contributing to a published view.  Warning: adql=hidden is
+  incompatible with setting readProfiles manually.
+* **allProfiles** (Comma separated list of profile names.; defaults to
+  u'admin') -- A (comma separated) list of profile names through which
+  the object can be written or administred.
+* **dupePolicy** (One of: drop, check, overwrite, dropOld; defaults to
+  'check') -- Handle duplicate rows with identical primary keys
+  manually by raising an error if existing and new rows are not
+  identical (check), dropping the new one (drop), updating the old one
+  (overwrite), or dropping the old one and inserting the new one
+  (dropOld)?
+* **forceUnique** (boolean; defaults to 'False') -- Enforce dupe
+  policy for primary key (see dupePolicy)?
+* A mixin reference, typically to support certain protocol.  See
+  Mixins_.
+* **namePath** (id reference; defaults to None) -- Reference to an
+  element tried to satisfy requests for names in id references of this
+  element's children.
+* **onDisk** (boolean; defaults to 'False') -- Table in the database
+  rather than in memory?
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **primary** (Comma-separated list of strings; defaults to '') --
+  Comma separated names of columns making up the primary key.
+* **readProfiles** (Comma separated list of profile names.; defaults
+  to u'trustedquery') -- A (comma separated) list of profile names
+  through which the object can be read.
+* **system** (boolean; defaults to 'False') -- Is this a system table?
+  If it is, it will not be dropped on normal imports, and accesses to
+  it will not be logged.
+* **temporary** (boolean; defaults to 'False') -- If this is an onDisk
+  table, make it temporary?  This is mostly useful for custom cores
+  and such.
+* **viewStatement** (unicode string; defaults to None) -- A single SQL
+  statement to create a view.  Setting this makes this table a view.
+  The statement will typically be something like CREATE VIEW
+  \\curtable AS (SELECT \\colNames FROM...).
+
+Structure Children
+..................
+
+* columns (contains `Element column`_ and may be repeated zero or more
+  times) -- Columns making up this table.
+* foreignKeys (contains `Element foreignKey`_ and may be repeated zero
+  or more times) -- Foreign keys used in this table
+* groups (contains `Element group`_ and may be repeated zero or more
+  times) -- Groups for columns and params of this table
+* indices (contains `Element index`_ and may be repeated zero or more
+  times) -- Indices defined on this table
+* params (contains `Element inputKey`_ and may be repeated zero or
+  more times) -- Input parameters for this table.
+* registration (contains `Element publish (data)`_) -- A registration
+  (to the VO registry) of this table.
+* stc (contains `Element stc`_ and may be repeated zero or more times)
+  -- STC-S definitions of coordinate systems.
+
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro curtable`_, `Macro decapitalize`_, `Macro getConfig`_, `Macro getParam`_, `Macro internallink`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro nameForUCD`_, `Macro nameForUCDs`_, `Macro qName`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro schema`_, `Macro tablename`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element metaMaker
+'''''''''''''''''
+
+A procedure application that generates metadata for datalink services.
+
+The code must be generators (i.e., use yield statements) producing either
+svcs.InputKeys or protocols.datalink.LinkDef instances.
+
+metaMaker see the data descriptor of the input data under the name
+descriptor.
+
+The data attribute of the descriptor is always None for metaMakers, so
+you cannot use anything given there.
+
+Within MetaMakers' code, you can access InputKey, Values, Option, and
+LinkDef without qualification, and there's the MS function to build
+structures.  Hence, a metaMaker returning an InputKey could look like this::
+
+  <metaMaker>
+    <code>
+      yield MS(InputKey, name="format", type="text",
+        description="Output format desired",
+        values=MS(Values,
+          options=[MS(Option, content_=descriptor.mime),
+            MS(Option, content_="text/plain")]))
+    </code>
+  </metaMaker>
+
+(of course, you should give more metadata -- ucds, better description,
+etc) in production).
+
+In addition to the usual names available to ProcApps, meta makers have:
+  - MS -- function to make DaCHS structures
+  - InputKey -- the class to make for input parameters
+  - Values -- the class to make for input parameters' values attributes
+  - Options -- used by Values
+  - LinkDef -- a class to define further links within datalink services.
+  - DatalinkFault -- a container of datalink error generators
+
+metaMaker
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element nullCore
+''''''''''''''''
+
+A core always returning None.
+
+This core will not work with the common renderers.  It is really
+intended to go with coreless services (i.e. those in which the
+renderer computes everthing itself and never calls service.runX).
+As an example, the external renderer could go with this.
+
+nullCore
+Atomic Children
+...............
+
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element productCore
+'''''''''''''''''''
+
+A core retrieving paths and/or data from the product table.
+
+You will not usually mention this core in your RDs.  It is mainly
+used internally to serve /getproduct queries.
+
+It is instanciated from within //products.rd and relies on
+tables within that RD.
+
+The input data consists of accref; you can use the string form
+of RAccrefs, and if you renderer wants, it can pass in ready-made
+RAccrefs.  You can pass accrefs in through both an accref 
+param and table rows.  
+
+The accref param is the normal way if you just want to retrieve a single
+image, the table case is for building tar files and such.  There is one core
+instance in //products for each case.
+
+The core returns a table containing rows with the single column source.
+Each contains a subclass of ProductBase above.
+
+All this is so complicated because special processing may take place
+(user autorisation, cutouts, ...) but primarily because we wanted
+the tar generation to use this core.  Looking at the mess that's caused
+suggests that probably was the wrong decision.
+
+productCore
+Atomic Children
+...............
+
+* **distinct** (boolean; defaults to 'False') -- Add a 'distinct'
+  modifier to the query?
+* **groupBy** (unicode string; defaults to None) -- A group by clause.
+  You shouldn't generally need this, and if you use it, you must give
+  an outputTable to your core.
+* **limit** (integer; defaults to None) -- A pre-defined match limit
+  (suppresses DB options widget).
+* **namePath** (id reference; defaults to None) -- Id of an element
+  that will be used to located names in id references.  Defaults to
+  the queriedTable's id.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **queriedTable** (id reference; defaults to <Undefined>) -- A
+  reference to the table this core queries.
+* **sortKey** (unicode string; defaults to None) -- A pre-defined sort
+  order (suppresses DB options widget).  The sort key accepts multiple
+  columns, separated by commas.
+
+Structure Children
+..................
+
+* condDescs (contains `Element condDesc`_ and may be repeated zero or
+  more times) -- Descriptions of the SQL and input generating entities
+  for this core; if not given, they will be generated from the table
+  columns.
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element pythonCore
+''''''''''''''''''
+
+A core doing computation using a piece of python.
+
+See `Python Cores instead of Custom Cores`_ in the reference.
+
+pythonCore
+Atomic Children
+...............
+
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* coreProc (contains `Element coreProc`_) -- Code making the
+  outputTable from the inputTable.
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element registryCore
+''''''''''''''''''''
+
+is a core processing OAI requests.
+
+Its signature requires a single input key containing the complete
+args from the incoming request.  This is necessary to satisfy the
+requirement of raising errors on duplicate arguments.
+
+It returns an ElementTree.
+
+This core is intended to work the the RegistryRenderer.
+
+registryCore
+Atomic Children
+...............
+
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element scsCore
+'''''''''''''''
+
+A core performing cone searches.
+
+This will, if it finds input parameters it can make out a position from,
+add a _r column giving the distance between the match center and 
+the columns that a cone search will match against.
+
+If any of the conditions for adding _r aren't met, this will silently
+degrade to a plain DBCore.
+
+You will almost certainly want a::
+
+  <FEED source="//scs#coreDescs"/>
+
+in the body of this (in addition to whatever other custom conditions
+you may have).
+
+scsCore
+Atomic Children
+...............
+
+* **distinct** (boolean; defaults to 'False') -- Add a 'distinct'
+  modifier to the query?
+* **groupBy** (unicode string; defaults to None) -- A group by clause.
+  You shouldn't generally need this, and if you use it, you must give
+  an outputTable to your core.
+* **limit** (integer; defaults to None) -- A pre-defined match limit
+  (suppresses DB options widget).
+* **namePath** (id reference; defaults to None) -- Id of an element
+  that will be used to located names in id references.  Defaults to
+  the queriedTable's id.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **queriedTable** (id reference; defaults to <Undefined>) -- A
+  reference to the table this core queries.
+* **sortKey** (unicode string; defaults to None) -- A pre-defined sort
+  order (suppresses DB options widget).  The sort key accepts multiple
+  columns, separated by commas.
+
+Structure Children
+..................
+
+* condDescs (contains `Element condDesc`_ and may be repeated zero or
+  more times) -- Descriptions of the SQL and input generating entities
+  for this core; if not given, they will be generated from the table
+  columns.
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element sdmCore
+'''''''''''''''
+
+A core for making (VO)Tables according to the Spectral Data Model.
+
+Do *not* use this any more, use datalink to do this.
+
+Here, the input table consists of the accref of the data to be generated.
+The data child of an SDMVOTCore prescribes how to come up with the
+table.  The output table is the (primary) table of the data instance.
+
+If you find yourself using this, please let the authors know.  We
+tend to believe SDMCores should no longer be necessary in the presence
+of getData, and hence we might want to remove this at some point.
+
+sdmCore
+Atomic Children
+...............
+
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **queriedTable** (id reference; defaults to <Undefined>) -- A
+  reference to the SSAP table to search the accrefs in
+
+Structure Children
+..................
+
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+* sdmDD (contains `Element data`_) -- A data instance that builds the
+  SDM table.  You'll need a custom or embedded grammar for those that
+  accepts an SDM row as input.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element siapCutoutCore
+''''''''''''''''''''''
+
+A core doing SIAP plus cutouts.
+
+It has, by default, an additional column specifying the desired size of
+the image to be retrieved.  Based on this, the cutout core will tweak
+its output table such that references to cutout images will be retrieved.
+
+The actual process of cutting out is performed by the product core and
+renderer.
+
+siapCutoutCore
+Atomic Children
+...............
+
+* **distinct** (boolean; defaults to 'False') -- Add a 'distinct'
+  modifier to the query?
+* **groupBy** (unicode string; defaults to None) -- A group by clause.
+  You shouldn't generally need this, and if you use it, you must give
+  an outputTable to your core.
+* **limit** (integer; defaults to None) -- A pre-defined match limit
+  (suppresses DB options widget).
+* **namePath** (id reference; defaults to None) -- Id of an element
+  that will be used to located names in id references.  Defaults to
+  the queriedTable's id.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **queriedTable** (id reference; defaults to <Undefined>) -- A
+  reference to the table this core queries.
+* **sortKey** (unicode string; defaults to None) -- A pre-defined sort
+  order (suppresses DB options widget).  The sort key accepts multiple
+  columns, separated by commas.
+
+Structure Children
+..................
+
+* condDescs (contains `Element condDesc`_ and may be repeated zero or
+  more times) -- Descriptions of the SQL and input generating entities
+  for this core; if not given, they will be generated from the table
+  columns.
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element ssapCore
+''''''''''''''''
+
+A core doing SSAP queries.
+
+This core knows about metadata queries, version negotiation, and 
+dispatches on REQUEST.  Thus, it may return formatted XML data
+under certain circumstances.
+
+SSAPCores also know how to handle getData requests according to the 2012
+draft.  This is done via datalink, and we expect parameters as per
+the sdm_* streams in datalink.
+
+ssapCore
+Atomic Children
+...............
+
+* **distinct** (boolean; defaults to 'False') -- Add a 'distinct'
+  modifier to the query?
+* **groupBy** (unicode string; defaults to None) -- A group by clause.
+  You shouldn't generally need this, and if you use it, you must give
+  an outputTable to your core.
+* **limit** (integer; defaults to None) -- A pre-defined match limit
+  (suppresses DB options widget).
+* **namePath** (id reference; defaults to None) -- Id of an element
+  that will be used to located names in id references.  Defaults to
+  the queriedTable's id.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **queriedTable** (id reference; defaults to <Undefined>) -- A
+  reference to the table this core queries.
+* **sortKey** (unicode string; defaults to None) -- A pre-defined sort
+  order (suppresses DB options widget).  The sort key accepts multiple
+  columns, separated by commas.
+
+Structure Children
+..................
+
+* condDescs (contains `Element condDesc`_ and may be repeated zero or
+  more times) -- Descriptions of the SQL and input generating entities
+  for this core; if not given, they will be generated from the table
+  columns.
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element ssapProcessCore
+'''''''''''''''''''''''
+
+Temporary Hack; delete when ccd700 is ported to a sane infrastructure.
+
+ssapProcessCore
+Atomic Children
+...............
+
+* **distinct** (boolean; defaults to 'False') -- Add a 'distinct'
+  modifier to the query?
+* **groupBy** (unicode string; defaults to None) -- A group by clause.
+  You shouldn't generally need this, and if you use it, you must give
+  an outputTable to your core.
+* **limit** (integer; defaults to None) -- A pre-defined match limit
+  (suppresses DB options widget).
+* **namePath** (id reference; defaults to None) -- Id of an element
+  that will be used to located names in id references.  Defaults to
+  the queriedTable's id.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **queriedTable** (id reference; defaults to <Undefined>) -- A
+  reference to the table this core queries.
+* **sortKey** (unicode string; defaults to None) -- A pre-defined sort
+  order (suppresses DB options widget).  The sort key accepts multiple
+  columns, separated by commas.
+
+Structure Children
+..................
+
+* condDescs (contains `Element condDesc`_ and may be repeated zero or
+  more times) -- Descriptions of the SQL and input generating entities
+  for this core; if not given, they will be generated from the table
+  columns.
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element uploadCore
+''''''''''''''''''
+
+A core handling uploads of files to the database.
+
+It allows users to upload individual files into a special staging
+area (taken from the stagingDir property of the destination data descriptor)
+and causes these files to be parsed using destDD.
+
+You can tell UploadCores to either insert or update the incoming data using
+the "mode" input key.
+
+uploadCore
+Atomic Children
+...............
+
+* **destDD** (id reference; defaults to <Undefined>) -- Reference to
+  the data we are uploading into.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* inputTable (contains `Element inputTable`_) -- Description of the
+  input data
+* outputTable (contains `Element outputTable`_) -- Table describing
+  what fields are available from this core
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+

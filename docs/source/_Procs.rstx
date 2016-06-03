@@ -1,3 +1,957 @@
+Procs
+=====
 //epntap#populate
+.................
+
+
+Sets metadata for an epntap data set, including its products definition.
+
+The values are left in vars, so you need to do manual copying,
+e.g., using idmaps="*".
+
+
+Setup parameters for the procedure are:
+
+
+Late parameter *access_format*
+  The standard text proposes the standard names VOTable, Fits, CSV, ASCII, PDS, as well as image formats.
+Late parameter *c1_max*
+  defaults to ``None``;
+  First coordinate (e.g., longitude, 'x'), upper limit
+Late parameter *c1_min*
+  defaults to ``None``;
+  First coordinate (e.g., longitude, 'x'), lower limit.
+Late parameter *c1_resol_max*
+  defaults to ``None``;
+  Resolution in the first coordinate, upper limit
+Late parameter *c1_resol_min*
+  defaults to ``None``;
+  Resolution in the first coordinate, lower limit.
+Late parameter *c2_max*
+  defaults to ``None``;
+  Second coordinate (e.g., latitude, 'y'), upper limit
+Late parameter *c2_min*
+  defaults to ``None``;
+  Second coordinate (e.g., latitude, 'y'), lower limit.
+Late parameter *c2_resol_max*
+  defaults to ``None``;
+  Resolution in the second coordinate, upper limit
+Late parameter *c2_resol_min*
+  defaults to ``None``;
+  Resolution in the second coordinate, lower limit.
+Late parameter *c3_max*
+  defaults to ``None``;
+  Third coordinate (e.g., height, 'z'), upper limit
+Late parameter *c3_min*
+  defaults to ``None``;
+  Third coordinate (e.g., height, 'z'), lower limit.
+Late parameter *c3_resol_max*
+  defaults to ``None``;
+  Resolution in the third coordinate, upper limit
+Late parameter *c3_resol_min*
+  defaults to ``None``;
+  Resolution in the third coordinate, lower limit.
+Late parameter *collection_id*
+  defaults to ``None``;
+  Identifier of the collection this piece of data belongs to
+Late parameter *dataproduct_type*
+  defaults to ``None``;
+  The high-level organization of the data product described (image, spectrum, etc)
+Late parameter *dataset_id*
+  defaults to ``"1"``;
+  Unless you understand the implications, leave this at the default. In particular, note that this is *not* a dataset id in the VO sense, so this should normally not be whatever standardPubDID generates.
+Late parameter *emergence_max*
+  defaults to ``None``;
+  Emergence angle during data acquisition, upper limit
+Late parameter *emergence_min*
+  defaults to ``None``;
+  Emergence angle during data acquisition, lower limit.
+Late parameter *incidence_max*
+  defaults to ``None``;
+  Incidence angle (solar zenithal angle) during data acquisition, upper limit
+Late parameter *incidence_min*
+  defaults to ``None``;
+  Incidence angle (solar zenithal angle) during data acquisition, lower limit.
+Late parameter *index_*
+  defaults to ``\rowsMade``;
+  A numeric reference for the item. By default, this is just the row number. As this will (usually) change when new data is added, you should override it with some unique integer number specific to the data product when there is such a thing.
+Late parameter *instrument_host_name*
+  Name of the observatory or spacecraft that the observation originated from; for ground-based data, use IAU observatory codes, http://www.minorplanetcenter.net/iau/lists/ObsCodesF.html, for space-borne instruments use http://nssdc.gsfc.nasa.gov/nmc/
+Late parameter *instrument_name*
+  defaults to ``None``;
+  Service providers are invited to include multiple values for instrumentname, e.g., complete name + usual acronym. This will allow queries on either 'VISIBLE AND INFRARED THERMAL IMAGING SPECTROMETER' or VIRTIS to produce the same reply.
+Late parameter *measurement_type*
+  defaults to ``None``;
+  UCD(s) defining the data, with multiple entries separated by space characters.
+Late parameter *phase_max*
+  defaults to ``None``;
+  Phase angle during data acquisition, upper limit
+Late parameter *phase_min*
+  defaults to ``None``;
+  Phase angle during data acquisition, lower limit.
+Late parameter *publisher*
+  defaults to ``None``;
+  A short string identifying the entity running the data service used.
+Late parameter *reference*
+  defaults to ``None``;
+  A bibcode or URL of a publication about the data.
+Late parameter *resource_type*
+  defaults to ``None``;
+  'granule' if the row describes a smallest element reachable in a service (e.g., a file), or 'dataset' for an aggregate of granules.
+Late parameter *sampling_step_max*
+  defaults to ``None``;
+  Separation between the centers of two adjacent filters or channels, upper limit
+Late parameter *sampling_step_min*
+  defaults to ``None``;
+  Separation between the centers of two adjacent filters or channels, lower limit.
+Late parameter *service_title*
+  defaults to ``None``;
+  The title of the data service producing this row.
+Late parameter *spatial_frame_type*
+  Flavor of the coordinate system (this also fixes the meanings of c1, c2, and c3). Values defined by EPN-TAP include celestial, body, cartesian, cylindrical, spherical, healpix.
+Late parameter *spectral_range_max*
+  defaults to ``None``;
+  Spectral domain of the data, upper limit
+Late parameter *spectral_range_min*
+  defaults to ``None``;
+  Spectral domain of the data, lower limit.
+Late parameter *spectral_resolution_max*
+  defaults to ``None``;
+  FWHM of the instrument profile, upper limit
+Late parameter *spectral_resolution_min*
+  defaults to ``None``;
+  FWHM of the instrument profile, lower limit.
+Late parameter *t_exp_max*
+  defaults to ``None``;
+  Integration time of the measurement, upper limit
+Late parameter *t_exp_min*
+  defaults to ``None``;
+  Integration time of the measurement, lower limit.
+Late parameter *t_sampling_step_max*
+  defaults to ``None``;
+  Sampling time for measurements of dynamical phenomena, upper limit
+Late parameter *t_sampling_step_min*
+  defaults to ``None``;
+  Sampling time for measurements of dynamical phenomena, lower limit.
+Late parameter *target_class*
+  defaults to ``"UNKNOWN"``;
+  The type of the target; choose from asteroid, dwarf_planet, planet, satellite, comet, exoplanet, interplanetary_medium, ring, sample, sky, spacecraft, spacejunk, star
+Late parameter *target_name*
+  Name of the target object, preferably according to the official IAU nomenclature. As appropriate, take these from the exoplanet encyclopedia http://exoplanet.eu, the meteor catalog at http://www.lpi.usra.edu/meteor/, the catalog of stardust samples at http://curator.jsc.nasa.gov/stardust/catalog/
+Late parameter *target_region*
+  defaults to ``None``;
+  This is a complement to the target name to identify a substructure of the target that was being observed (e.g., Atmosphere, Surface). Take terms from them Spase dictionary at http://www.spase-group.org or the IVOA thesaurus.
+Late parameter *time_max*
+  defaults to ``None``;
+  Acquisition stop time (as JD)
+Late parameter *time_min*
+  defaults to ``None``;
+  Acquisition start time (as JD)
+Late parameter *time_scale*
+  defaults to ``"UNKNOWN"``;
+  Time scale used for the various times, as given by IVOA's STC data model. Choose from TT, TDB, TOG, TOB, TAI, UTC, GPS, UNKNOWN
+
+//procs#dictMap
+...............
+
+
+Maps input values through a dictionary.
+
+The dictionary is given in its python form here.  This apply
+only operates on the rawdict, i.e., the value in vars is changed,
+while nothing is changed in the rowdict.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *default*
+  defaults to ``KeyError``;
+  Default value for missing keys (with this at the default, an error is raised)
+Parameter *key*
+  Name of the input key to map
+Parameter *mapping*
+  Python dictionary literal giving the mapping
+
+//procs#fullQuery
+.................
+
+
+runs a free query against the data base and enters the first result 
+record into vars.
+
+locals() will be passed as data, so you can define more bindings
+and refer to their keys in the query.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *errCol*
+  defaults to ``'<unknown>'``;
+  a column name to use when raising a ValidationError on failure.
+Parameter *query*
+  an SQL query
+
+//procs#mapValue
+................
+
+
+is an apply proc that translates values via a utils.NameMap
+
+Destination may of course be the source field (though that messes
+up idempotency of macro expansion, which shouldn't usually hurt).
+
+The format of the mapping file is::
+
+  <target key><tab><source keys>
+
+where source keys is a whitespace-seperated list of values that should
+be mapped to target key (sorry the sequence's a bit unusual).
+
+A source key must be encoded quoted-printable.  This usually doesn't
+matter except when it contains whitespace (a blank becomes =20) or equal
+signs (which become =3D).
+
+Here's an example application for a filter that's supposed to translate
+some botched object names::
+
+  <apply name="cleanObject" procDef="//procs#mapValue">
+    <bind name="destination">"cleanedObject"</bind>
+    <bind name="failuresMapThrough">True</bind>
+    <bind name="value">@preObject</bind>
+    <bind name="sourceName">"flashheros/res/namefixes.txt"</bind>
+  </apply>
+
+The input could look like this, with a Tab char written as " <TAB> "
+for clarity::
+
+  alp Cyg <TAB> aCyg alphaCyg
+  Nova Cygni 1992 <TAB> Nova=20Cygni=20'92 Nova=20Cygni
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *destination*
+  name of the field the mapped value should be written into
+Parameter *failuresAreNone*
+  defaults to ``False``;
+  Rather than raise an error, yield NULL for values not in the mapping
+Parameter *failuresMapThrough*
+  defaults to ``False``;
+  Rather than raise an error, yield the input value if it is not in the mapping (this is for 'fix some'-like functions and only works when failureAreNone is False)
+Parameter *logFailures*
+  defaults to ``False``;
+  Log non-resolved names?
+Parameter *sourceName*
+  An inputsDir-relative path to the NameMap source file.
+Late parameter *value*
+  The value to be mapped.
+
+//procs#resolveObject
+.....................
+
+
+Resolve identifiers to simbad positions.
+
+It caches query results (positive as well as negative ones) in
+cacheDir.  To avoid flooding simbad with repetetive requests, it
+raises an error if this directory is not writable.
+
+It leaves J2000.0 positions as floats in the simbadAlpha and 
+simbadDelta variables.
+
+
+Setup parameters for the procedure are:
+
+
+Late parameter *identifier*
+  The identifier to be resolved.
+Parameter *ignoreUnknowns*
+  defaults to ``True``;
+  Return Nones for unknown objects? (if false, ValidationErrors will be raised)
+Parameter *logUnknowns*
+  defaults to ``False``;
+  Write unresolved object names to the info log
+
+//procs#simpleSelect
+....................
+
+
+Fill variables from a simple  database query.
+
+The idea is to obtain a set of values from the data base into some
+columns within vars (i.e., available for mapping) based on comparing
+a single input value against a database column.  The query should
+always return exactly one row.  If more rows are returned, the
+first one will be used (which makes the whole thing a bit of a gamble),
+if none are returned, a ValidationError is raised.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *assignments*
+  mapping from database column names to vars column names, in the format {<db colname>:<vars name>}"
+Parameter *column*
+  the column to compare the input value against
+Parameter *errCol*
+  defaults to ``'<unknown>'``;
+   UNDOCUMENTED
+Parameter *table*
+  name of the database table to query
+Late parameter *val*
+   UNDOCUMENTED
+
+//siap#computeBbox
+..................
+
+
+Computes WCS information for SIA tables from FITS WCS keys.
+
+It takes no arguments but expects WCS-like keywords in rowdict, i.e.,
+CRVAL1, CRVAL2 (interpreted as float deg), CRPIX1, CRPIX2 (pixel
+corresponding to CRVAL1, CRVAL2), CUNIT1, CUNIT2 (pixel scale unit,
+we bail out if it isn't deg and assume deg when it's not present), 
+CDn_n (the transformation matrix; substitutable by CDELTn), NAXISn 
+(the image size).
+
+Records without or with insufficient wcs keys are furnished with
+all-NULL wcs info if the missingIsError setup parameter is False,
+else they bomb out with a DataError (the default).
+
+Use either computePGS or computeBbbox depending on what mixin
+the table has.  PGS is much preferable.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *missingIsError*
+  defaults to ``True``;
+  Throw an exception when no WCS information can be located.
+Parameter *naxis*
+  defaults to ``"1,2"``;
+  Comma-separated list of integer axis indices (1=first) to be considered for WCS
+
+//siap#computePGS
+.................
+
+
+Computes WCS information for SIA tables from FITS WCS keys.
+
+It takes no arguments but expects WCS-like keywords in rowdict, i.e.,
+CRVAL1, CRVAL2 (interpreted as float deg), CRPIX1, CRPIX2 (pixel
+corresponding to CRVAL1, CRVAL2), CUNIT1, CUNIT2 (pixel scale unit,
+we bail out if it isn't deg and assume deg when it's not present), 
+CDn_n (the transformation matrix; substitutable by CDELTn), NAXISn 
+(the image size).
+
+Records without or with insufficient wcs keys are furnished with
+all-NULL wcs info if the missingIsError setup parameter is False,
+else they bomb out with a DataError (the default).
+
+Use either computePGS or computeBbbox depending on what mixin
+the table has.  PGS is much preferable.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *missingIsError*
+  defaults to ``True``;
+  Throw an exception when no WCS information can be located.
+Parameter *naxis*
+  defaults to ``"1,2"``;
+  Comma-separated list of integer axis indices (1=first) to be considered for WCS
+
+//siap#getBandFromFilter
+........................
+
+
+sets the bandpassId, bandpassUnit, bandpassRefval, bandpassHi,
+and bandpassLo from a set of standard band Ids.
+
+The bandpass ids known are contained in a file supplied file
+that you should consult for supported values.  Run
+gavo admin dumpDF data/filters.txt for details.
+
+All values filled in here are in meters.
+
+If this is used, it must run after //siap#setMeta since 
+setMeta clobbers our result fields.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *sourceCol*
+  defaults to ``None``;
+  Name of the column containing the filter name; leave at default None to take the band from result['bandpassId'], where such information would be left by siap#setMeta.
+
+//siap#setMeta
+..............
+
+
+sets siap meta *and* product table fields.
+
+These fields are common to all SIAP implementations.
+
+If you define the bandpasses yourself, do *not* change
+bandpassUnit and give all values in Meters.  If you do change
+it, at least obscore would break, but probably more.
+For optical images, we recommend to fill out bandpassId and then 
+let the //siap#getBandFromFilter apply compute the actual
+limits.  If your band is not known, please supply the
+necessary information to the authors.
+
+Do *not* use ``idmaps="*"`` when using this procDef; it writes
+directly into result, and you would be clobbering what it does.
+
+
+Setup parameters for the procedure are:
+
+
+Late parameter *bandpassHi*
+  defaults to ``None``;
+  lower value of wavelength or frequency
+Late parameter *bandpassId*
+  defaults to ``None``;
+  a rough indicator of the bandpass, like Johnson bands
+Late parameter *bandpassLo*
+  defaults to ``None``;
+  upper value of the wavelength or frequency
+Late parameter *bandpassRefval*
+  defaults to ``None``;
+  characteristic frequency or wavelength of the exposure
+Late parameter *bandpassUnit*
+  defaults to ``"m"``;
+  the unit of the bandpassRefval and friends
+Late parameter *dateObs*
+  defaults to ``None``;
+  the midpoint of the observation; this can either be a datetime instance, or a float>1e6 (a julian date) or something else (which is then interpreted as an MJD)
+Late parameter *instrument*
+  defaults to ``None``;
+  a short identifier for the instrument used
+Late parameter *pixflags*
+  defaults to ``None``;
+  processing flags (C atlas image or cutout, F resampled, X computed without interpolation, Z pixel flux calibrated, V unspecified visualisation for presentation only)
+Late parameter *refFrame*
+  defaults to ``'ICRS'``;
+  reference frame of the coordinates (change at your peril)
+Late parameter *title*
+  defaults to ``None``;
+  image title. This should, in as few characters as possible, convey some idea what the image will show (e.g., instrument, object, bandpass
+
+//slap#fillBasic
+................
+
+
+This apply is intended for rowmakers filling tables mixing in
+//slap#basic.  It populates vars for all the columns in there;
+you'll normally want idmaps="*" with this apply.
+
+For most of its parameters, it will take them for same-named vars,
+so you can slowly build up its arguments through var elements.
+
+
+Setup parameters for the procedure are:
+
+
+Late parameter *chemical_element*
+  defaults to ``@chemical_element``;
+  Element that makes the transition. It's probably ok to dump molecule names in here, too.
+Late parameter *final_level_energy*
+  defaults to ``@final_level_energy``;
+  Energy of the final state
+Late parameter *final_name*
+  defaults to ``@final_name``;
+  Designation of the final state
+Late parameter *id_status*
+  defaults to ``"identified"``;
+  Identification status; this would be identified or unidentified plus possibly uncorrected (but read the SLAP spec for that).
+Late parameter *initial_level_energy*
+  defaults to ``@initial_level_energy``;
+  Energy of the initial state
+Late parameter *initial_name*
+  defaults to ``@initial_name``;
+  Designation of the initial state
+Late parameter *linename*
+  defaults to ``@linename``;
+  A brief designation for the line, like 'H alpha' or 'N III 992.973 A'.
+Late parameter *pub*
+  defaults to ``@pub``;
+  Publication this came from (use a bibcode).
+Late parameter *wavelength*
+  defaults to ``@wavelength``;
+  Wavelength of the transition in meters; this will typically be an expression like int(@wavelength)*1e-10
+
+//ssap#setMeta
+..............
+
+
+Sets metadata for an SSA data set, including its products definition.
+
+The values are left in vars, so you need to do manual copying,
+e.g., using idmaps="*", or, if you need to be more specific,
+idmaps="ssa_*".
+
+
+Setup parameters for the procedure are:
+
+
+Late parameter *alpha*
+  defaults to ``None``;
+  right ascension of target (ICRS degrees); ssa:Char.SpatialAxis.Coverage.Location.Value.C1
+Late parameter *aperture*
+  defaults to ``None``;
+  angular diameter of aperture (expected in degrees); ssa:Char.SpatialAxis.Coverage.Bounds.Extent
+Late parameter *bandpass*
+  defaults to ``None``;
+  bandpass (i.e., rough spectral location) of this dataset; ssa:DataID.Bandpass
+Late parameter *cdate*
+  defaults to ``None``;
+  date the file was created (or processed; optional); this must be either a string in ISO format, or you need to parse to a timestamp yourself; ssa:DataID.Date
+Late parameter *creatorDID*
+  defaults to ``None``;
+  id given by the creator (leave out if not applicable); ssa:DataID.CreatorDID
+Late parameter *cversion*
+  defaults to ``None``;
+  creator assigned version for this file (should be incremented when it is changed); ssa:DataID.Version
+Late parameter *dateObs*
+  defaults to ``None``;
+  observation midpoint (you can give a datetime, a string in iso format, a jd, or an mjd, the latter two being told apart by comparing against 1e6)
+Late parameter *delta*
+  defaults to ``None``;
+  declination of target (ICRS degrees); ssa:Char.SpatialAxis.Coverage.Location.Value.C2
+Late parameter *dstitle*
+  a title for the data set (e.g., instrument, filter, target in some short form; must be filled in); ssa:DataID.Title
+Late parameter *length*
+  defaults to ``None``;
+  Number of samples in the spectrum; ssa:Dataset.Length
+Late parameter *pdate*
+  defaults to ``datetime.datetime.utcnow()``;
+  date the file was last published (in general, the default is fine); ssa:Curation.Date
+Late parameter *pubDID*
+  Id provided by the publisher (i.e., you); this is an opaque string and must be given; ssa:Curation.PublisherDID
+Late parameter *redshift*
+  defaults to ``None``;
+  source redshift; ssa:Target.Redshift
+Late parameter *snr*
+  defaults to ``None``;
+  signal-to-noise ratio estimated for this dataset; ssa:Derived.SNR
+Late parameter *specend*
+  defaults to ``None``;
+  upper bound of wavelength interval (in meters); ssa:Char.SpectralAxis.Coverage.Bounds.Stop
+Late parameter *specext*
+  defaults to ``None``;
+  width of bandpass (in meters of wavelength); ssa:Char.SpectralAxis.Coverage.Bounds.Extent
+Late parameter *specmid*
+  defaults to ``None``;
+  central wavelength (in meters of wavelength); ssa:Char.SpectralAxis.Coverage.Location.Value
+Late parameter *specstart*
+  defaults to ``None``;
+  lower bound of wavelength interval (in meters); ssa:Char.SpectralAxis.Coverage.Bounds.Start
+Late parameter *targclass*
+  defaults to ``None``;
+  object class (star, QSO,...); ssa:Target.Class
+Late parameter *targname*
+  defaults to ``None``;
+  common name of the object observed; ssa:Target.Name
+Late parameter *timeExt*
+  defaults to ``None``;
+  exposure time (in seconds); ssa:Char.TimeAxis.Coverage.Bounds.Extent
+
+//ssap#setMixcMeta
+..................
+
+
+Sets metadata for an SSA data set from mixed sources.  This will
+only work sensibly in cooperation with setMeta
+
+As with setMeta, the values are left in vars; if you did as recommended
+with setMeta, you'll have this covered as well.
+
+
+Setup parameters for the procedure are:
+
+
+Late parameter *binSize*
+  defaults to ``None``;
+  Bin size on the spectral axis in m
+Late parameter *collection*
+  defaults to ``None``;
+  IOVA id of the originating data collection (leave empty if you don't know what this is about)
+Late parameter *creationType*
+  defaults to ``None``;
+  Process used to produce the data (zero or more of archival, cutout, filtered, mosaic, projection, spectralExtraction, catalogExtraction, concatenated by commas); ssa:DataID.CreationType
+Late parameter *creator*
+  defaults to ``"Take from RD"``;
+  Creator/Author
+Late parameter *dataSource*
+  defaults to ``None``;
+  Generation type (typically, one survey, pointed, theory, custom, artificial); ssa:DataID.DataSource
+Late parameter *dstype*
+  defaults to ``"Spectrum"``;
+  Type of data. The only defined value currently is Spectrum, but you may get away with TimeSeries; ssa:Dataset.Type
+Late parameter *fluxCalib*
+  defaults to ``None``;
+  Type of flux calibration (one of ABSOLUTE, RELATIVE, NORMALIZED, or UNCALIBRATED); ssa:Char.FluxAxis.Calibration
+Late parameter *fluxStatError*
+  defaults to ``None``;
+  Statistical error for flux in units of fluxUnit
+Late parameter *fluxSysError*
+  defaults to ``None``;
+  Systematic error for flux in units of fluxUnit
+Late parameter *instrument*
+  defaults to ``"Take from RD"``;
+  Instrument or code used to produce this dataset; ssa:DataID.Instrument
+Late parameter *publisher*
+  defaults to ``"Take from RD"``;
+  Publisher IVO; ssa:Curation.Publisher
+Late parameter *reference*
+  defaults to ``"Take from RD"``;
+  URL or bibcode of a publication describing this data.
+Late parameter *specCalib*
+  defaults to ``None``;
+  Type of wavelength Calibration (one of ABSOLUTE, RELATIVE, NORMALIZED, or UNCALIBRATED); ssa:Char.SpectralAxis.Calibration
+Late parameter *specres*
+  defaults to ``None``;
+  Resolution on the spectral axis; you must give this as FWHM wavelength in meters here. Approximate as necessary; ssa:Char.SpectralAxis.Resolution
+Late parameter *spectStatError*
+  defaults to ``None``;
+  Statistical error for the spectral coordinate in m
+Late parameter *spectSysError*
+  defaults to ``None``;
+  Systematic error for the spectral coordinate in m
+
 //procs#expandComma
+...................
+
+
+A row generator that reads comma seperated values from a
+field and returns one row with a new field for each of them.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *destField*
+  Name of the column the individual columns are written to
+Parameter *srcField*
+  Name of the column containing the full string
+
+//procs#expandDates
+...................
+
+
+is a row generator to expand time ranges.
+
+The finished dates are left in destination as datetime.datetime
+instances
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *dest*
+  defaults to ``'curTime'``;
+  name of the column the time should appear in
+Parameter *end*
+  the end date(time)
+Late parameter *hrInterval*
+  defaults to ``24``;
+  difference between generated timestamps in hours
+Parameter *start*
+  the start date(time), as either a datetime object or a column ref
+
+//procs#expandIntegers
+......................
+
+
+A row processor that produces copies of rows based on integer indices.
+
+The idea is that sometimes rows have specifications like "Star 10
+through Star 100".  These are a pain if untreated.  A RowExpander
+could create 90 individual rows from this.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *endName*
+  column containing the end value
+Parameter *indName*
+  name the counter should appear under
+Parameter *startName*
+  column containing the start value
+
+//products#define
+.................
+
+
+Enters the values defined by the product interface into 
+a grammar's result.
+
+See the documentation on the //products#table mixin.  In short:
+you will always  have to touch table (to the name of the
+table this row is managed in).  
+
+Everything else is optional: You may want to set preview
+and preview_mime if DaCHS can't do previews of your stuff 
+automatically.  datalink is there if you have  a datalink
+thing.  What's left is for special situations.
+
+This will create the keys prodblAccref, prodtblOwner, prodtblEmbargo,
+prodtblPath, prodtblFsize, prodtblTable, prodtblMime, prodtblPreview,
+prodtbleMime, and prodtblDatalink keys in rawdict -- you can
+refer to them in the usual @foo way, which is sometimes useful
+even outside products processing proper (in particular for
+prodtblAccref).
+
+
+Setup parameters for the procedure are:
+
+
+Late parameter *accref*
+  defaults to ``\inputRelativePath{False}``;
+  an access reference (this ususally is the input-relative path; only file names well-behaved in URLs are accepted here by default for easier operation with ObsTAP)
+Late parameter *datalink*
+  defaults to ``None``;
+  id of a datalink service that understands this file's pubDID.
+Late parameter *embargo*
+  defaults to ``None``;
+  for proprietary data, the date the file will become public
+Late parameter *fsize*
+  defaults to ``\inputSize``;
+  the size of the input
+Late parameter *mime*
+  defaults to ``'image/fits'``;
+  MIME-type for the product
+Late parameter *owner*
+  defaults to ``None``;
+  for proprietary data, the owner as a gavo creds-created user
+Late parameter *path*
+  defaults to ``\inputRelativePath{True}``;
+  the inputs-relative path to the product file (change at your peril)
+Late parameter *preview*
+  defaults to ``'AUTO'``;
+  file path to a preview, dcc://rd.id/svcid id of a preview-enabled datalink service, None to disable previews, or 'AUTO' to make DaCHS guess.
+Late parameter *preview_mime*
+  defaults to ``None``;
+  MIME-type for the preview (if there is one).
+Parameter *table*
+  the table this product is managed in. You must fill this in, and don't forget the quotes.
+
 //datalink#fits_doWCSCutout
+...........................
+
+
+A fairly generic FITS cutout function.
+
+It expects some special attributes in the descriptor to allow it
+to decode the arguments.  These must be left behind by the
+metaMaker(s) creating the parameters.
+
+This is axisNames, a dictionary mapping parameter names to
+the FITS axis numbers or the special names WCSLAT or WCSLONG. 
+It also expects a skyWCS attribute, a pywcs.WCS instance for spatial
+cutouts.
+
+Finally, descriptor must have a list attribute slices, containing
+zero or more tuples of (fits axis, lowerPixel, upperPixel); this
+allows things like LAMBDA to add their slices obtained
+from parameters in standard units.
+
+The .data attribute must be a pyfits hduList, as generated by the
+fits_makeHDUList data function.
+
+
+//datalink#fits_formatHDUs
+..........................
+
+
+Formats pyfits HDUs into a FITS file.
+
+This all works in memory, so for large FITS files you'd want something
+more streamlined.
+
+
+//datalink#fits_genDesc
+.......................
+
+A data function for datalink returning the a fits descriptor.
+
+This has, in addition to the standard stuff, a hdr attribute containing
+the primary header as pyfits structure.
+
+The functionality of this is in its setup, getFITSDescriptor.
+The intention is that customized DGs (e.g., fixing the header)
+can use this as an original.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *accrefStart*
+  defaults to ``None``;
+  A start of accrefs the parent datalink service works of. Procedures on all other accrefs will be rejected with a 403 forbidden. You should always include a restriction like this when you make assumptions about the FITSes (e.g., what axes are available).
+
+//datalink#fits_makeHDUList
+...........................
+
+
+An initial data function to construct a pyfits hduList and
+make that into a descriptor's data attribute.
+
+This wants a descriptor as returned by fits_genDesc.
+
+There's a hack here: this sets a dataIsPristine boolean on
+descriptor that's made false when one of the fits manipulators
+change something.  If that's true by the time the formatter
+sees it, it will just push out the entire file.  So, if you
+use this and insert your own data functions, make sure you
+set dataIsPristine accordingly.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *crop*
+  defaults to ``True``;
+  Cut away everything but the primary HDU?
+
+//datalink#fits_makeLambdaMeta
+..............................
+
+
+Yields standard lambda params.
+
+This adds lambdaToMeterFactor and lambdaAxis attributes to the
+descriptor for later use by 
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *fitsAxis*
+  defaults to ``3``;
+  FITS axis index (1-based) of the wavelength dimension
+Parameter *wavelengthUnit*
+  defaults to ``None``;
+  Override for the FITS unit given for the wavelength (for when it is botched or missing; leave at None for taking it from the header)
+
+//datalink#fits_makeLambdaSlice
+...............................
+
+
+Computes a cutout for the parameters added by makeLambdaMeta.
+
+This *must* sit in front of doWCSCutout.
+
+This also reuses internal state added by makeLambdaMeta,
+so this really only makes sense together with it.
+
+
+//datalink#fits_makeWCSParams
+.............................
+
+A metaMaker that generates parameters allowing cutouts along
+the various WCS axes in physical coordinates.
+
+This uses pywcs for the spatial coordinates and tries to figure out 
+what these are with some heuristics.  For the remaining coordinates,
+it assumes all are basically 1D, and it sets up separate, manual
+transformations for them.
+
+The metaMaker leaves an axisNames mapping in the descriptor.
+This is important for the fits_doWCSCutout, and replacement metaMakers
+must do the same.
+
+The meta maker also creates a skyWCS attribute in the descriptor
+if successful, containing the spatial transformation only.  All
+other transformations, if present, are in miscWCS, by a dict mapping
+axis labels to the fitstools.WCS1Trans instances.
+
+If individual metadata in the header are wrong or to give better
+metadata, use axisMetaOverrides.  This will not generate standard
+parameters for non-spatial axis (LAMBDA and friends).  There are
+other datalink streams for those.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *axisMetaOverrides*
+  defaults to ``{}``;
+  A python dictionary mapping fits axis indices (1-based) to dictionaries of inputKey constructor arguments; for spatial axis, use the axis name instead of the axis index.
+Parameter *stcs*
+  defaults to ``None``;
+  A QSTC expression describing the STC structure of the parameters. If you don't give this, no STC structure will be declared.
+
+//datalink#fromStandardPubDID
+.............................
+
+A descriptor generator for datalink that builds a 
+ProductDescriptor for PubDIDs that have been built by getStandardsPubDID
+(i.e., the path part of the IVORN is a tilda, with the
+products table accref as the query part).
+
+
+//datalink#generateProduct
+..........................
+
+A data function for datalink that returns a product instance.
+You can restrict the mime type of the product requested so the
+following filters have a good idea what to expect.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *requireMimes*
+  defaults to ``frozenset()``;
+  A set or sequence of mime type strings; when given, the data generator will bail out with ValidationError if the product mime is not among the mimes given.
+
+//datalink#sdm_genData
+......................
+
+A data function for datalink returning a spectral data model
+compliant table that later data functions can then work on.
+As usual for generators, it uses the implicit PUBDID argument.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *builder*
+  Full reference (like path/rdname#id) to a data element building the SDM instance table as its primary table.
+
+//datalink#sdm_genDesc
+......................
+
+A data function for datalink returning the product row
+corresponding to a PubDID within an SSA table.
+
+The descriptors generated have an ssaRow attribute containing
+the original row in the SSA table.
+
+
+Setup parameters for the procedure are:
+
+
+Parameter *ssaTD*
+  Full reference (like path/rdname#id) to the SSA table the spectrum's PubDID can be found in.
+
+//datalink#trivialFormatter
+...........................
+
+The tivial formatter for datalink processed data -- it just
+returns descriptor.data, which will only work it it works as a
+nevow resource.
+
+If you do not give any dataFormatter yourself in a datalink core,
+this is what will be used.
+
+

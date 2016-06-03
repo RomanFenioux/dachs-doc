@@ -1,1 +1,115 @@
+Triggers
+========
 Element and
+'''''''''''
+
+A trigger that is true when all its children are true.
+
+and
+Atomic Children
+...............
+
+* **name** (unicode string; defaults to 'unnamed') -- A name that
+  should help the user figure out what trigger caused some condition
+  to fire.
+
+Structure Children
+..................
+
+* triggers (contains any of
+  and,keyPresent,keyNull,keyIs,keyMissing,not and may be repeated zero
+  or more times) -- One or more conditions joined by an implicit
+  logical or.  See Triggers_ for information on what can stand here.
+
+Element keyIs
+'''''''''''''
+
+A trigger firing when the value of key in row is equal to the value given.
+
+Missing keys are always accepted.  You can define an SQL type; value will
+then be interpreted as a literal for this type, and this literal's value will
+be compared against the key's value.  This is only needed for grammars like
+fitsProductGrammar that actually yield typed values.
+
+keyIs
+Atomic Children
+...............
+
+* **key** (unicode string; defaults to <Undefined>) -- Key to check
+* **name** (unicode string; defaults to 'unnamed') -- A name that
+  should help the user figure out what trigger caused some condition
+  to fire.
+* **type** (unicode string; defaults to 'text') -- An SQL type the
+  python equivalent of which the value should be converted to before
+  checking.
+* **value** (unicode string; defaults to <Undefined>) -- The string
+  value to fire on.
+
+Element keyMissing
+''''''''''''''''''
+
+A trigger firing if a certain key is missing in the dict.
+
+This is equivalent to::
+
+  <not><keyPresent key="xy"/></not>
+
+keyMissing
+Atomic Children
+...............
+
+* **key** (unicode string; defaults to <Undefined>) -- Key to check
+* **name** (unicode string; defaults to 'unnamed') -- A name that
+  should help the user figure out what trigger caused some condition
+  to fire.
+
+Element keyNull
+'''''''''''''''
+
+A trigger firing if a certain key is missing or NULL/None
+
+keyNull
+Atomic Children
+...............
+
+* **key** (unicode string; defaults to <Undefined>) -- Key to check
+* **name** (unicode string; defaults to 'unnamed') -- A name that
+  should help the user figure out what trigger caused some condition
+  to fire.
+
+Element keyPresent
+''''''''''''''''''
+
+A trigger firing if a certain key is present in the dict.
+
+keyPresent
+Atomic Children
+...............
+
+* **key** (unicode string; defaults to <Undefined>) -- Key to check
+* **name** (unicode string; defaults to 'unnamed') -- A name that
+  should help the user figure out what trigger caused some condition
+  to fire.
+
+Element not
+'''''''''''
+
+A trigger that is false when its children, or-ed together, are true and
+vice versa.
+
+not
+Atomic Children
+...............
+
+* **name** (unicode string; defaults to 'unnamed') -- A name that
+  should help the user figure out what trigger caused some condition
+  to fire.
+
+Structure Children
+..................
+
+* triggers (contains any of
+  and,keyPresent,keyNull,keyIs,keyMissing,not and may be repeated zero
+  or more times) -- One or more conditions joined by an implicit
+  logical or.  See Triggers_ for information on what can stand here.
+

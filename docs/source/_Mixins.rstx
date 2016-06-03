@@ -1,1 +1,717 @@
+Mixins
+======
 The //epntap#table Mixin
+''''''''''''''''''''''''
+
+
+This mixin defines a table suitable for publication via the
+EPN-TAP protocol.
+
+According to the standard definition, tables mixing this in
+should be called ``epn_core``.  The mixin already arranges
+for the table to be accessible by ADQL and be on disk.
+
+This also mixes causes the product table to be populated.
+This means that grammars feeding such tables need a 
+`//products#define`_ row filter.  At the very least, you need to say::
+
+  <rowfilter procDef="//products#define">
+    <bind name="table">"\schema.epn_core"</bind>
+  </rowfilter>
+
+Use the `//epntap#populate`_ apply in rowmakers
+feeding tables mixing this in.
+
+
+This mixin has the following parameters:
+
+
+Parameter *c1unit*
+  defaults to ``deg``;
+  Unit of the first spatial coordinate
+Parameter *c2unit*
+  defaults to ``deg``;
+  Unit of the second spatial coordinate
+Parameter *c3unit*
+  Unit of the third spatial coordinate
+Parameter *processing_level*
+  How processed is the data? This is a numerical code explained in the corresponding table footnote. In short: 1 -- Raw; 2 -- Edited; 3 -- Calibrated; 4 -- Resampled; 5 -- Derived; 6 -- Ancillary
+Parameter *spectralUCD*
+  defaults to ``em.freq``;
+  UCD of the spectral axis; this must be one of em.freq (for electromagnetic radiation) or phys.energy;phys.part (for particles)
+
+The //obscore#publish Mixin
+'''''''''''''''''''''''''''
+
+
+Publish this table to ObsTAP.
+
+This means mapping or giving quite a bit of data from the present
+table to ObsCore rows.  Internally, this information is converted
+to an SQL select statement used within a create view statement.
+In consequence, you must give *SQL* expressions in the parameter 
+values; just naked column names from your input table are ok,
+of course.  Most parameters are set to NULL or appropriate
+defaults for tables mixing in //products#table.
+
+Since the mixin generates script elements, it cannot be used
+in untrusted RDs.  The fact that you can enter raw SQL also
+means you will get ugly error messages if you give invalid
+parameters.
+
+Some items are filled from product interface fields automatically.
+You must change these if you obscore-publish tables not mixin
+in products.
+
+
+This mixin has the following parameters:
+
+
+Parameter *accessURL*
+  defaults to ``$COMPUTE``;
+  URL at which the product can be obtained. Leave at $COMPUTE for tables mixing in products.
+Parameter *calibLevel*
+  defaults to ``0``;
+  Calibration level of data, a number between 0 and 3; for details, see http://dc.g-vo.org/tableinfo/ivoa.obscore#note-calib
+Parameter *collectionName*
+  defaults to ``'unnamed'``;
+  A human-readable name for this collection. This should be short, so don't just use the resource title
+Parameter *coverage*
+  defaults to ``NULL``;
+  A polygon giving the spatial coverage of the data set; this must always be in ICRS. Instead of an SPOLY other pgsphere areas might work, too.
+Parameter *creatorDID*
+  defaults to ``NULL``;
+  Global identifier of the data set assigned by the creator. Leave NULL unless the creator actually assigned an IVO id herself.
+Parameter *dec*
+  defaults to ``NULL``;
+  Center Dec
+Parameter *did*
+  defaults to ``$COMPUTE``;
+  Global identifier of the data set. Leave $COMPUTE for tables mixing in products.
+Parameter *emMax*
+  defaults to ``NULL``;
+  Upper bound of wavelengths represented in the data set, in meters.
+Parameter *emMin*
+  defaults to ``NULL``;
+  Lower bound of wavelengths represented in the data set, in meters.
+Parameter *emResPower*
+  defaults to ``NULL``;
+  Spectral resolution as lambda/delta lambda
+Parameter *expTime*
+  defaults to ``NULL``;
+  Total time of event counting. This simply is tMax-tMin for simple exposures.
+Parameter *facilityName*
+  defaults to ``NULL``;
+  The institute or observatory at which the data was produced
+Parameter *fov*
+  defaults to ``NULL``;
+  Approximate diameter of region covered
+Parameter *instrumentName*
+  defaults to ``NULL``;
+  The instrument that produced the data
+Parameter *mime*
+  defaults to ``mime``;
+  The MIME type of the product file. Only touch if you do not mix in products.
+Parameter *oUCD*
+  defaults to ``NULL``;
+  UCD of the observable quantity, e.g., em.opt for wide-band optical frames.
+Parameter *obsId*
+  defaults to ``accref``;
+  Identifier of the data set. Only change this when you do not mix in products.
+Parameter *polStates*
+  defaults to ``NULL``;
+  List of polarization states present in the data; if you give something, use the convention of choosing the appropriate from {I Q U V RR LL RL LR XX YY XY YX POLI POLA} and write them with / separators, e.g. /I/Q/XX/
+Parameter *productSubtype*
+  defaults to ``NULL``;
+  File subtype. Details pending
+Parameter *productType*
+  Data product type; one of image, cube, spectrum, sed, timeseries, visibility, event, or NULL if None of the above
+Parameter *ra*
+  defaults to ``NULL``;
+  Center RA
+Parameter *sResolution*
+  defaults to ``NULL``;
+  The (best) angular resolution within the data set, in arcsecs
+Parameter *size*
+  defaults to ``accsize/1024``;
+  The estimated size of the product in kilobytes. Only touch when you do not mix in products#table.
+Parameter *tMax*
+  defaults to ``NULL``;
+  MJD for the upper bound of times covered in the data set. See tMin
+Parameter *tMin*
+  defaults to ``NULL``;
+  MJD for the lower bound of times covered in the data set (e.g. start of exposure). Use ts_to_mjd(ts) to get this from a postgres timestamp.
+Parameter *tResolution*
+  defaults to ``NULL``;
+  Temporal resolution
+Parameter *targetClass*
+  defaults to ``NULL``;
+  Class of target object(s). You should take whatever you put here from http://simbad.u-strasbg.fr/guide/chF.htx
+Parameter *targetName*
+  defaults to ``NULL``;
+  Name of the target object.
+Parameter *title*
+  defaults to ``NULL``;
+  A human-readable title of the data set.
+
+The //obscore#publishSIAP Mixin
+'''''''''''''''''''''''''''''''
+
+
+Publish a PGS SIAP table to ObsTAP.
+
+This works like //obscore#publish except some defaults apply
+that copy fields that work analoguously in SIAP and in ObsTAP.
+
+For special situations, you can, of course, override any
+of the parameters, but most of them should already be all right.
+To find out what the parameters described as "preset for SIAP"
+mean, refer to //obscore#publish.
+
+
+This mixin has the following parameters:
+
+
+Parameter *accessURL*
+  defaults to ``$COMPUTE``;
+  URL at which the product can be obtained. Leave at $COMPUTE for tables mixing in products.
+Parameter *calibLevel*
+  defaults to ``0``;
+  Calibration level of data, a number between 0 and 3; for details, see http://dc.g-vo.org/tableinfo/ivoa.obscore#note-calib
+Parameter *collectionName*
+  defaults to ``'unnamed'``;
+  A human-readable name for this collection. This should be short, so don't just use the resource title
+Parameter *coverage*
+  defaults to ``coverage``;
+  preset for SIAP
+Parameter *creatorDID*
+  defaults to ``NULL``;
+  Global identifier of the data set assigned by the creator. Leave NULL unless the creator actually assigned an IVO id herself.
+Parameter *dec*
+  defaults to ``centerDelta``;
+  preset for SIAP
+Parameter *did*
+  defaults to ``$COMPUTE``;
+  Global identifier of the data set. Leave $COMPUTE for tables mixing in products.
+Parameter *emMax*
+  defaults to ``bandpassHi``;
+  preset for SIAP
+Parameter *emMin*
+  defaults to ``bandpassLo``;
+  preset for SIAP
+Parameter *emResPower*
+  defaults to ``NULL``;
+  Spectral resolution as lambda/delta lambda
+Parameter *expTime*
+  defaults to ``NULL``;
+  Total time of event counting. This simply is tMax-tMin for simple exposures.
+Parameter *facilityName*
+  defaults to ``NULL``;
+  The institute or observatory at which the data was produced
+Parameter *fov*
+  defaults to ``pixelScale[1]*pixelSize[1]``;
+  preset for SIAP; we use the extent along the X axis as a very rough estimate for the size. If you can do better, by all means do.
+Parameter *instrumentName*
+  defaults to ``instId``;
+  The instrument that produced the data
+Parameter *mime*
+  defaults to ``mime``;
+  The MIME type of the product file. Only touch if you do not mix in products.
+Parameter *oUCD*
+  defaults to ``'em.opt'``;
+  preset for SIAP; fix if you either know more about the band of if your images are not in the optical.
+Parameter *obsId*
+  defaults to ``accref``;
+  Identifier of the data set. Only change this when you do not mix in products.
+Parameter *polStates*
+  defaults to ``NULL``;
+  List of polarization states present in the data; if you give something, use the convention of choosing the appropriate from {I Q U V RR LL RL LR XX YY XY YX POLI POLA} and write them with / separators, e.g. /I/Q/XX/
+Parameter *productSubtype*
+  defaults to ``NULL``;
+  File subtype. Details pending
+Parameter *productType*
+  defaults to ``'image'``;
+  preset for SIAP
+Parameter *ra*
+  defaults to ``centerAlpha``;
+  preset for SIAP
+Parameter *sResolution*
+  defaults to ``pixelScale[1]*3600``;
+  preset for SIAP; this is just the pixel scale in one dimension. If that's seriously wrong or you have uncalibrated images in your collection, you may need to be more careful here.
+Parameter *size*
+  defaults to ``accsize/1024``;
+  The estimated size of the product in kilobytes. Only touch when you do not mix in products#table.
+Parameter *size*
+  defaults to ``accsize``;
+  preset for SIAP
+Parameter *tMax*
+  defaults to ``dateObs``;
+  preset for SIAP; if you want, change this to end of observation as available.
+Parameter *tMin*
+  defaults to ``dateObs``;
+  preset for SIAP; if you want, change this to start of observation as available.
+Parameter *tResolution*
+  defaults to ``NULL``;
+  Temporal resolution
+Parameter *targetClass*
+  defaults to ``NULL``;
+  Class of target object(s). You should take whatever you put here from http://simbad.u-strasbg.fr/guide/chF.htx
+Parameter *targetName*
+  defaults to ``NULL``;
+  Name of the target object.
+Parameter *title*
+  defaults to ``imageTitle``;
+  preset for SIAP
+
+The //obscore#publishSSAPHCD Mixin
+''''''''''''''''''''''''''''''''''
+
+
+Publish a table mixing in //ssap#hcd to ObsTAP.
+
+This works like //obscore#publish except some defaults apply
+that copy fields that work analoguously in SSAP and in ObsTAP.
+
+For special situations, you can, of course, override any
+of the parameters, but most of them should already be all right.
+To find out what the parameters described as "preset for SSAP"
+mean, refer to //obscore#publish.
+
+
+This mixin has the following parameters:
+
+
+Parameter *accessURL*
+  defaults to ``$COMPUTE``;
+  URL at which the product can be obtained. Leave at $COMPUTE for tables mixing in products.
+Parameter *calibLevel*
+  defaults to ``0``;
+  Calibration level of data, a number between 0 and 3; for details, see http://dc.g-vo.org/tableinfo/ivoa.obscore#note-calib
+Parameter *collection*
+  defaults to ``\getParam{ssa_collection}{NULL}``;
+   UNDOCUMENTED
+Parameter *collectionName*
+  defaults to ``'unnamed'``;
+  A human-readable name for this collection. This should be short, so don't just use the resource title
+Parameter *coverage*
+  defaults to ``NULL``;
+   UNDOCUMENTED
+Parameter *creatorDID*
+  defaults to ``ssa_creatorDID``;
+   UNDOCUMENTED
+Parameter *dec*
+  defaults to ``degrees(lat(ssa_location))``;
+   UNDOCUMENTED
+Parameter *did*
+  defaults to ``$COMPUTE``;
+  Global identifier of the data set. Leave $COMPUTE for tables mixing in products.
+Parameter *emMax*
+  defaults to ``ssa_specend``;
+   UNDOCUMENTED
+Parameter *emMin*
+  defaults to ``ssa_specstart``;
+   UNDOCUMENTED
+Parameter *emResPower*
+  defaults to ``NULL``;
+  Spectral resolution as lambda/delta lambda
+Parameter *expTime*
+  defaults to ``NULL``;
+  Total time of event counting. This simply is tMax-tMin for simple exposures.
+Parameter *expTime*
+  defaults to ``ssa_timeExt``;
+   UNDOCUMENTED
+Parameter *facilityName*
+  defaults to ``NULL``;
+  The institute or observatory at which the data was produced
+Parameter *fov*
+  defaults to ``ssa_aperture``;
+   UNDOCUMENTED
+Parameter *instrumentName*
+  defaults to ``'\getParam{ssa_instrument}{NULL}'``;
+   UNDOCUMENTED
+Parameter *mime*
+  defaults to ``mime``;
+  The MIME type of the product file. Only touch if you do not mix in products.
+Parameter *oUCD*
+  defaults to ``'\getParam{ssa_fluxucd}'``;
+   UNDOCUMENTED
+Parameter *obsId*
+  defaults to ``accref``;
+  Identifier of the data set. Only change this when you do not mix in products.
+Parameter *polStates*
+  defaults to ``NULL``;
+  List of polarization states present in the data; if you give something, use the convention of choosing the appropriate from {I Q U V RR LL RL LR XX YY XY YX POLI POLA} and write them with / separators, e.g. /I/Q/XX/
+Parameter *productSubtype*
+  defaults to ``NULL``;
+  File subtype. Details pending
+Parameter *productType*
+  defaults to ``'spectrum'``;
+   UNDOCUMENTED
+Parameter *ra*
+  defaults to ``degrees(long(ssa_location))``;
+   UNDOCUMENTED
+Parameter *sResolution*
+  defaults to ``\getParam{ssa_spaceRes}{NULL}/3600.``;
+   UNDOCUMENTED
+Parameter *size*
+  defaults to ``accsize/1024``;
+  The estimated size of the product in kilobytes. Only touch when you do not mix in products#table.
+Parameter *tMax*
+  defaults to ``NULL``;
+   UNDOCUMENTED
+Parameter *tMax*
+  defaults to ``ssa_dateObs+ssa_timeExt/2``;
+   UNDOCUMENTED
+Parameter *tMin*
+  defaults to ``NULL``;
+   UNDOCUMENTED
+Parameter *tMin*
+  defaults to ``ssa_dateObs-ssa_timeExt/2``;
+   UNDOCUMENTED
+Parameter *tResolution*
+  defaults to ``NULL``;
+  Temporal resolution
+Parameter *targetClass*
+  defaults to ``NULL``;
+  Class of target object(s). You should take whatever you put here from http://simbad.u-strasbg.fr/guide/chF.htx
+Parameter *targetClass*
+  defaults to ``ssa_targclass``;
+   UNDOCUMENTED
+Parameter *targetName*
+  defaults to ``NULL``;
+  Name of the target object.
+Parameter *targetName*
+  defaults to ``ssa_targname``;
+   UNDOCUMENTED
+Parameter *title*
+  defaults to ``ssa_dstitle``;
+   UNDOCUMENTED
+
+The //products#table Mixin
+''''''''''''''''''''''''''
+
+
+A mixin for tables containing "products".
+
+A "product" here is some kind of binary, typically a FITS file.
+The table receives the columns accref, accsize, owner, and embargo
+(which is defined in //products#prodcolUsertable).
+
+By default, the accref is the path to the file relative to the inputs
+directory; this is also what /getproduct expects for local products.
+You can of course enter URLs to other places.
+
+For local files, you are strongly encouraged to keep the accref URL- and
+shell-clean, the most important reason being your users' sanity. 
+Another is that obscore in the current implementation does no 
+URL escaping for local files.  So, just don't use characters like
+like +, the ampersand, apostrophes and so on; the default
+accref parser will reject those anyway.  Actually, try
+making do with alphanumerics, the underscore, the dash, and the dot,
+ok?
+
+owner and embargo let you introduce access control.  Embargo is a
+date at which the product will become publicly available.  As long
+as this date is in the future, only authenticated users belonging to
+the *group* owner are allowed to access the product.
+
+In addition, the mixin arranges for the products to be added to the
+system table products, which is important when delivering the files.
+
+Tables mixing this in should be fed from grammars using the 
+//products#define row filter.
+
+
+
+The //scs#positions Mixin
+'''''''''''''''''''''''''
+
+
+A mixin adding standardized columns for equatorial positions to the
+table.
+
+It consists of the fields alphaFloat, deltaFloat (float angles
+in degrees, J2000.0) and c_x, c_y, c_z (intersection of the radius
+vector to alphaFloat, deltaFloat with the unit sphere).
+
+You will usually use it in conjunction with the //scs#eqFloat procDef that
+preparse these fields for you.
+
+Thus, you could say::
+
+  <proc procDef="//scs#eqFloat">
+    <arg name="alpha">alphaSrc</arg>
+    <arg name="delta">deltaSrc</arg>
+  </proc>
+
+Note, however, that it's usually much better to not mess with the
+table structure and handle positions using the q3cindex mixin.
+
+
+The //scs#q3cindex Mixin
+''''''''''''''''''''''''
+
+
+A mixin adding an index to the main equatorial positions.
+
+This is what you usually want if your input data already has
+"sane" (i.e., ICRS or at least J2000) positions or you convert
+the positions manually.
+
+You have to designate exactly one column with the ucds pos.eq.ra;meta.main
+pos.eq.dec;meta.main, respectively.  These columns receive the
+positional index.
+
+This will fail without the q3c extension to postgres.
+
+
+The //siap#bbox Mixin
+'''''''''''''''''''''
+
+
+A table mixin for simple support of SIAP based on hand-made bboxes.
+
+The columns added into the tables include
+
+  - (certain) FITS WCS headers 
+  - imageTitle (interpolateString should come in handy for these)
+  - instId -- some id for the instrument used
+  - dateObs -- MJD of the "characteristic" observation time
+  - the bandpass* values.  You're on your own with them...
+  - the values of the //products#table mixin.  
+  - mimetype -- the mime type of the product.
+  - the primaryBbox, secondaryBbox, centerAlpha and centerDelta, nAxes, 
+    pixelSize, pixelScale, wcs* fields calculated by the 
+    computeBboxSIAPFields macro.   
+
+(their definition is in the siap system RD)
+
+Tables mixing in //siap#bbox can be used for SIAP querying and
+automatically mix in the products table mixin.
+
+To feed these tables, use the //siap#computeBbox and 
+//siap#setMeta procs.  Since you are dealing with products, you will also
+need the //products#define rowgen in your grammar.
+
+If you have pgSphere, you definitely should use the pgs mixin in
+preference to this.
+
+
+The //siap#pgs Mixin
+''''''''''''''''''''
+
+
+A table mixin for simple support of SIAP.
+
+The columns added into the tables include
+
+  - (certain) FITS WCS headers 
+  - imageTitle (interpolateString should come in handy for these)
+  - instId -- some id for the instrument used
+  - dateObs -- MJD of the "characteristic" observation time
+  - the bandpass* values.  You're on your own with them...
+  - the values of the product mixin.  
+  - mimetype -- the mime type of the product.
+  - the coverage, centerAlpha and centerDelta, nAxes, 
+    pixelSize, pixelScale, wcs* fields calculated by the 
+    computePGS macro.   
+
+(their definition is in the siap system RD)
+
+Tables mixing in pgs can be used for SIAP querying and
+automatically mix in the products table mixin.
+
+To feed these tables, use the //siap#computePGS and 
+//siap#setMeta procs.  Since you are dealing with products, 
+you will also need the //products#define rowgen in your grammar.
+
+
+The //slap#basic Mixin
+''''''''''''''''''''''
+
+
+This mixin is for tables serving SLAP services, i.e., tables
+with spectral lines.  It does not contain all "optional" columns,
+hence the name basic.  We'd do "advanced", too, if there's demand.
+
+Use the `//slap#fillBasic`_ procDef to populate such tables.
+
+
+The //ssap#hcd Mixin
+''''''''''''''''''''
+
+
+This mixin is for "homogeneous" data collections, where homogeneous
+means that all values in hcd_outpars are constant for all datasets
+in the collection.  This is usually the case if they all come
+from one instrument.
+
+Rowmakers for tables using this mixin should use the `//ssap#setMeta`_
+proc application.
+
+Do not forget to call the `//products#define`_ row filter in grammars
+feeding tables mixing this in.  At the very least, you need to
+say::
+
+  <rowfilter procDef="//products#define">
+    <bind name="table">"mySchema.myTableName"</bind>
+  </rowfilter>
+
+
+This mixin has the following parameters:
+
+
+Parameter *collection*
+  defaults to ``__NULL__``;
+  ivo id of the originating collection; ssa:DataID.Collection
+Parameter *creationType*
+  defaults to ``__NULL__``;
+  Process used to produce the data (zero or more of archival, cutout, filtered, mosaic, projection, spectralExtraction, catalogExtraction); ssa:DataID.CreationType
+Parameter *creator*
+  defaults to ``__NULL__``;
+  Creator designation; ssa:DataID.Creator
+Parameter *dataSource*
+  defaults to ``__NULL__``;
+  Generation type (typically, one survey, pointed, theory, custom, artificial); ssa:DataID.DataSource
+Parameter *fluxCalibration*
+  Type of flux calibration (one of ABSOLUTE, RELATIVE, NORMALIZED, or UNCALIBRATED); ssa:Char.FluxAxis.Calibration
+Parameter *fluxSI*
+  defaults to ``__NULL__``;
+  SI conversion factor for fluxes in the spectrum instance (not the SSA metadata) in Osuna-Salgado convention; ssa:Dataset.FluxSI (you probably want to leave this empty)
+Parameter *fluxUCD*
+  defaults to ``phot.flux.density;em.wl``;
+  ucd of the flux column, like phot.count, phot.flux.density, etc. Default is for flux over wavelength; ssa:Char.FluxAxis.Ucd
+Parameter *fluxUnit*
+  Flux unit used by the spectra and in SSA char metadata. This must be a VOUnit string (use a single blank if your spectrum is not calibrated).
+Parameter *instrument*
+  defaults to ``__NULL__``;
+  Instrument or code used to produce these datasets; ssa:DataID.Instrument
+Parameter *publisher*
+  defaults to ``\metaString{publisherID}``;
+  Publisher IVO (by default taken from the DC config); ssa:Curation.Publisher
+Parameter *reference*
+  defaults to ``__NULL__``;
+  URL or bibcode of a publication describing this data; ssa:Curation.Reference
+Parameter *spectralCalibration*
+  defaults to ``__NULL__``;
+  Type of wavelength Calibration (one of ABSOLUTE, RELATIVE, NORMALIZED, or UNCALIBRATED); ssa:Char.SpectralAxis.Calibration
+Parameter *spectralResolution*
+  defaults to ``NaN``;
+  Resolution on the spectral axis; you must give this as FWHM wavelength in meters here. Approximate as necessary; ssa:Char.SpectralAxis.Resolution
+Parameter *spectralSI*
+  defaults to ``__NULL__``;
+  SI conversion factor of frequency or wavelength in the spectrum instance (not the SSA metadata, they are all in meters); ssa:Dataset.SpectralSI (you probably want to leave this empty)
+Parameter *spectralUCD*
+  defaults to ``em.wl``;
+  ucd of the spectral column, like em.freq or em.energy; default is wavelength; ssa:Char.SpectralAxis.Ucd
+Parameter *spectralUnit*
+  Spectral unit used by the spectra (SSA char metadata always is wavelength in meters). This must be a VOUnit string (use a single blank if your spectrum is not calibrated).
+Parameter *statFluxError*
+  defaults to ``__NULL__``;
+  Statistical error in flux; ssa:Char.FluxAxis.Accuracy.StatError
+Parameter *statSpaceError*
+  defaults to ``__NULL__``;
+  Statistical error in position in degrees; ssa:Char.SpatialAxis.Accuracy.StatError
+Parameter *statSpectError*
+  defaults to ``__NULL__``;
+  Statistical error in wavelength (units of specralSI); ssa:Char.SpectralAxis.Accuracy.StatError
+Parameter *sysFluxError*
+  defaults to ``__NULL__``;
+  Systematic error in flux; ssa:Char.FluxAxis.Accuracy.SysError
+Parameter *sysSpectError*
+  defaults to ``__NULL__``;
+  Systematic error in wavelength (in m); ssa:Char.SpectralAxis.Accuracy.SysError
+Parameter *timeSI*
+  defaults to ``__NULL__``;
+  SI conversion factor for times in Osuna-Salgado convention; ssa:DataSet.TimeSI (you probably want to leave this empty)
+
+The //ssap#mixc Mixin
+'''''''''''''''''''''
+
+
+This mixin is for spectral data collections mixing products
+from various sources.
+
+Rowmakers for tables using this mixin should use the `//ssap#setMeta`_
+and the `//ssap#setMixcMeta`_ proc applications.
+
+There are some limitations to the variability; in particular, all
+spectra must have the same types of axes (i.e., frequency, wavelength,
+or energy) with identical units.  If you don't have that,
+either leave the respective metadata empty or homogenize it
+in the rowmaker.  Anything else cannot be sensibly declared,
+not to mention searched.
+
+Do not forget to call the `//products#define`_ row filter in grammars
+feeding tables mixing this in.  At the very least, you need to
+say::
+
+  <rowfilter procDef="//products#define">
+    <bind name="table">"mySchema.myTableName"</bind>
+  </rowfilter>
+
+
+This mixin has the following parameters:
+
+
+Parameter *fluxSI*
+  defaults to ``__NULL__``;
+  SI conversion factor for fluxes in the spectrum instance (not the SSA metadata) in Osuna-Salgado convention; ssa:Dataset.FluxSI (you probably want to leave this empty)
+Parameter *fluxUCD*
+  defaults to ``phot.flux.density;em.wl``;
+  ucd of the flux column, like phot.count, phot.flux.density, etc. Default is for flux over wavelength; ssa:Char.FluxAxis.Ucd
+Parameter *fluxUnit*
+  Flux unit used by the spectra and in SSA char metadata. This must be a VOUnit string (use a single blank if your spectrum is not calibrated).
+Parameter *spectralSI*
+  defaults to ``__NULL__``;
+  SI conversion factor of frequency or wavelength in the spectrum instance (not the SSA metadata, they are all in meters); ssa:Dataset.SpectralSI (you probably want to leave this empty)
+Parameter *spectralUCD*
+  defaults to ``em.wl``;
+  ucd of the spectral column, like em.freq or em.energy; default is wavelength; ssa:Char.SpectralAxis.Ucd
+Parameter *spectralUnit*
+  Spectral unit used by the spectra (SSA char metadata always is wavelength in meters). This must be a VOUnit string (use a single blank if your spectrum is not calibrated).
+Parameter *timeSI*
+  defaults to ``__NULL__``;
+  SI conversion factor for times in Osuna-Salgado convention; ssa:DataSet.TimeSI (you probably want to leave this empty)
+
+The //ssap#sdm-instance Mixin
+'''''''''''''''''''''''''''''
+
+
+This mixin is intended for tables that get serialized into documents
+conforming to the Spectral Data Model 1, specifically to VOTables
+
+The input to such tables comes from ssa tables (hcd, in this case).
+Their columns (and params) are transformed into params here.
+
+The mixin adds two columns (you could add more if, e.g., you had
+errors depending on the spectral or flux value), spectral (wavelength
+or the like) and flux.  Their metadata is taken from the ssa fields
+where available (ssa_fluxucd as flux UCD, ssa_fluxunit etc).
+
+This mixin in action could look like this::
+
+  <table id="instance" onDisk="False">
+    <mixin ssaTable="spectra"
+      fluxUnit="Jy"
+      >//ssap#sdm-instance</mixin>
+  </table>
+
+
+
+This mixin has the following parameters:
+
+
+Parameter *fluxDescription*
+  defaults to ``The dependent variable of this spectrum (see the ucd for its physical meaning)``;
+  Description for the flux column
+Parameter *spectralDescription*
+  defaults to ``The independent variable of this spectrum (see its ucd to figure out whether it's a wavelength, frequency, or energy)``;
+  Description for the spectral column
+Parameter *spectralUCDOverride*
+  Force UCD of the spectral column (don't use this)
+Parameter *spectralUnitOverride*
+  Force unit of the spectral column (don't use this)
+Parameter *ssaTable*
+  The SSAP (HCD) instance table to take the params from
+

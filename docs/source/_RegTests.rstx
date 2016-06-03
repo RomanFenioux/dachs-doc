@@ -1,1 +1,68 @@
-*
+RegTests
+========
+*assertHasStrings(self, *strings)*
+  checks that all its arguments are found within content.
+  
+
+*assertHeader(self, key, value)*
+  checks that header key has value in the response headers.
+  
+  keys are compared case-insensitively, values are compared literally.
+  
+
+*assertLacksStrings(self, *strings)*
+  checks that all its arguments are *not* found within content.
+  
+
+*assertValidatesXSD(self)*
+  checks whether the returned data are XSD valid.
+  
+  As we've not yet found a python XSD validator capable enough to
+  deal with the complex web of schema files in the VO, this
+  requires a little piece of java (which also means that these tests
+  are fairly resource demanding).  In a checkout of DaCHS, go to the
+  schemata subdirectory and run python makeValidator.py (this needs 
+  a JDK as well as some external libraries; see the makeValidator source).
+  
+
+*assertXpath(self, path, assertions)*
+  checks an xpath assertion.
+  
+  path is an xpath (as understood by lxml), with namespace
+  prefixes statically mapped; there's currently v2 (VOTable
+  1.2), v1 (VOTable 1.1), v (whatever VOTable version
+  is the current DaCHS default), h (the namespace of the
+  XHTML elements DaCHS generates), and o (OAI-PMH 2.0).
+  If you need more prefixes, hack the source and feed back
+  your changes (monkeypatching self.XPATH_NAMESPACE_MAP
+  is another option).
+  
+  path must match exactly one element.
+  
+  assertions is a dictionary mapping attribute names to
+  their expected value.  Use the key None to check the
+  element content, and match for None if you expect an
+  empty element.
+  
+  If you need an RE match rather than equality, there's
+  EqualingRE in your code's namespace.
+  
+  This needs lxml (debian package python-lxml) installed.
+  As it's only a matter of time until lxml will become
+  a hard DaCHS dependency, installing it is a good idea
+  anyway.
+  
+
+*getFirstVOTableRow(self)*
+  interprets data as a VOTable and returns the first row as a dictionary
+  
+  In test use, make sure the VOTable returned is sorted, or you will get
+  randomly failing tests.  Ideally, you'll constrain the results to just
+  one match; database-querying cores (which is where order is an
+  issue) also honor _DBOPTIONS_ORDER).
+  
+
+*getVOTableRows(self)*
+  parses the first table in a result VOTable and returns the contents
+  as a sequence of dictionaries.
+  

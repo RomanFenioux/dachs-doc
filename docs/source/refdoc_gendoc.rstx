@@ -96,7 +96,7 @@ here can be found in in the `GAVO datacenter element reference`_.
 
 .. _GAVO datacenter element reference: http://docs.g-vo.org/DaCHS/elemref.html
 
-:doc:`Struct <Struct>`
+:doc:`Structs <_Structs>`
 
 
 Active Tags
@@ -106,7 +106,7 @@ The following tags are "active", which means that they do not directly
 contribute to the RD parsed.  Instead they define, replay, or edit
 streams of elements.
 
-:doc:`ActiveTag <ActiveTag>`
+:doc:`ActiveTags <_ActiveTags>`
 
 
 Grammars Available
@@ -115,7 +115,7 @@ Grammars Available
 The following elements are all grammar related.  All grammar elements
 can occur in data descriptors.
 
-:doc:`Grammar <Grammar>`
+:doc:`Grammars <_Grammars>`
 
 Cores Available
 ===============
@@ -125,7 +125,7 @@ toplevel, i.e. as direct children of resource descriptors.  Cores are
 only useful with an id to make them referencable from services using
 that core.
 
-:doc:`Core <Core>`
+:doc:`Cores <_Cores>`
 
 
 Predefined Macros
@@ -139,7 +139,7 @@ hope DaCHS typically behaves "as expected").  If this bites you,
 complain to the authors and we promise we'll give fixing this a higher
 priority.
 
-:doc:`Macros <Macros>`
+:doc:`Macros <_Macros>`
 
 Mixins
 ======
@@ -150,7 +150,7 @@ mixins, there are predefined procedures (both rowmaker applys and
 grammar rowfilters) that should be used in grammars and/or rowmakers
 feeding the tables mixing in a given mixin.
 
-:doc:`Mixin <Mixin>`
+:doc:`Mixins <_Mixins>`
 
 
 Triggers
@@ -169,7 +169,7 @@ raise an error if the trigger is pulled; this is mainly for debugging).
 
 The following triggers are defined:
 
-:doc:`Trigger <Trigger>`
+:doc:`Triggers <_Triggers>`
 
 
 Renderers Available
@@ -187,7 +187,7 @@ based cores to renderers:
 Unchecked renderers can be applied to any service and need not be
 explicitely allowed by the service.
 
-:doc:`Renderer <Renderer>`
+:doc:`Renderers <_Renderers>`
 
 
 Predefined Procedures
@@ -196,19 +196,19 @@ Predefined Procedures
 Procedures available for rowmaker apply
 '''''''''''''''''''''''''''''''''''''''
 
-:doc:`Procs <Procs>`
+:doc:`Procs <_Procs>`
 
 
 Procedures available for grammar rowfilters
 '''''''''''''''''''''''''''''''''''''''''''
 
-:doc:`Procs <Procs>`
+:doc:`Procs <_Procs>`
 
 
 Procedures available for datalink cores
 '''''''''''''''''''''''''''''''''''''''
 
-:doc:`Procs <Procs>`
+:doc:`Procs <_Procs>`
 
 
 Predefined Streams
@@ -224,12 +224,12 @@ streams within DaCHS that are intended for developer consumption.
 Datalink-related Streams
 ''''''''''''''''''''''''
 
-:doc:`Streams <Streams>`
+:doc:`Streams <_Streams>`
 
 Other Streams
 '''''''''''''
 
-:doc:`Streams <Streams>`
+:doc:`Streams <_Streams>`
 
 
 Metadata
@@ -332,7 +332,7 @@ While generally the DC software does not care what you put into meta
 items and views them all as strings, certain keys are treated
 specially.  The following meta keys trigger some special behaviour:
 
-:doc:`MetaKey <MetaKey>`
+:doc:`MetaKeys <_MetaKeys>`
 
 Additionally, there is ``creator``, which is really special (at least
 for now).  When you set creator to a string, the string will be split at
@@ -1200,7 +1200,7 @@ failure.
 
 Here's a list of assertion methods defined right now:
 
-:doc:`RegTest <RegTest>`
+:doc:`RegTests <_RegTests>`
 
 
 All of these are methods, so you would actually write
@@ -3211,7 +3211,7 @@ modules as well as gavo.base, gavo.utils, and gavo.coords.
 However, much of the time you will get by using the following functions
 that are immediately accessible in the namespace:
 
-:doc:`RowMakers <RowMakers>`
+:doc:`RowMakers <_RowMakers>`
 
 
 
@@ -3401,7 +3401,7 @@ The documentation given here is extracted from the resource descriptors,
 which, again, you can read in source using ``gavo admin dumpDF
 //<rd-name>``.
 
-:doc:`SystemTables <SystemTables>`
+:doc:`SystemTables <_SystemTables>`
 
 .. _dachs-support: http://lists.g-vo.org/cgi-bin/mailman/listinfo/dachs-support
 

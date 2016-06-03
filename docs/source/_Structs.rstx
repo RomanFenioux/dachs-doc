@@ -1,1 +1,2428 @@
+Structs
+=======
 Element apply
+'''''''''''''
+
+A code fragment to manipulate the result row (and possibly more).
+
+Apply elements allow embedding python code in rowmakers.
+
+The current input fields from the grammar (including the rowmaker's vars) 
+are available in the vars dictionary and can be changed there.  You can 
+also add new keys.
+
+You can add new keys for shipping out in the result dictionary.
+
+The active rowmaker is available as parent.  It is also used to
+expand macros.
+
+The table that the rowmaker feeds to can be accessed as targetTable.  
+You probably only want to change meta information here (e.g., warnings 
+or infos).
+
+As always in procApps, you can get the embedding RD as rd; this is
+useful to, e.g., resolve references using rd.getByRD, and specify 
+resdir-relative file names using rd.getAbsPath.
+
+apply
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element bind
+''''''''''''
+
+A binding of a procedure definition parameter to a concrete value.
+
+The value to set is contained in the binding body in the form of
+a python expression.  The body must not be empty.
+
+bind
+Atomic Children
+...............
+
+* Character content of the element (defaulting to <Not given/empty>)
+  -- The default for the parameter. The special value __NULL__
+  indicates a NULL (python None) as usual. An empty content means a
+  non-preset parameter, which must be filled in applications.  The
+  magic value __EMPTY__ allows presetting an empty string.
+* **description** (whitespace normalized unicode string; defaults to
+  None) -- Some human-readable description of what the parameter is
+  about
+* **key** (unicode string; defaults to <Undefined>) -- The name of the
+  parameter
+* **late** (boolean; defaults to 'False') -- Bind the name not at
+  setup time but at applying time.  In rowmaker procedures, for
+  example, this allows you to refer to variables like vars or rowIter
+  in the bindings.
+
+Element column
+''''''''''''''
+
+A database column.
+
+Columns contain almost all metadata to describe a column in a database
+table or a VOTable (the exceptions are for column properties that may
+span several columns, most notably indices).
+
+Note that the type system adopted by the DC software is a subset
+of postgres' type system.  Thus when defining types, you have to
+specify basically SQL types.  Types for other type systems (like
+VOTable, XSD, or the software-internal representation in python values)
+are inferred from them.
+
+Columns can have delimited identifiers as names.  Don't do this, it's
+no end of trouble.  For this reason, however, you should not use name
+but rather key to programmatially obtain field's values from rows.
+
+Properties evaluated:
+
+- std -- set to 1 to tell the tap schema importer to have the column's
+  std column in TAP_SCHEMA 1 (it's 0 otherwise).
+
+column
+Atomic Children
+...............
+
+* **description** (whitespace normalized unicode string; defaults to
+  '') -- A short (one-line) description of the values in this column.
+* **displayHint** (Display hint; defaults to '') -- Suggested
+  presentation; the format is  <kw>=<value>{,<kw>=<value>}, where what
+  is interpreted depends on the output format.  See, e.g.,
+  documentation on HTML renderers and the formatter child of
+  outputFields.
+* **fixup** (unicode string; defaults to None) -- A python expression
+  the value of which will replace this column's value on database
+  reads.  Write a ___ to access the original value.  You can use
+  macros for the embedding table. This is for, e.g., simple URL
+  generation (fixup="'\internallink{/this/svc}'+___"). It will *only*
+  kick in when tuples are deserialized from the database, i.e., *not*
+  for values taken from tables in memory.
+* **name** (a column name within an SQL table.  These have to match
+  ``[A-Za-z_][A-Za-z0-9_]*$``.  In a desperate pinch, you can generate
+  delimited identifiers (that can contain anything) by prefixing the
+  name with 'quoted/' (but you cannot use rowmakers to fill such
+  tables).; defaults to <Undefined>) -- Name of the column
+* **note** (unicode string; defaults to None) -- Reference to a note
+  meta on this table explaining more about this column
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **required** (boolean; defaults to 'False') -- Record becomes
+  invalid when this column is NULL
+* **tablehead** (unicode string; defaults to None) -- Terse phrase to
+  put into table headers for this column
+* **type** (a type name; the internal type system is similar to SQL's
+  with some restrictions and extensions.  The known atomic types
+  include: unicode, pql-float, text, spoly, char, raw, vexpr-mjd,
+  boolean, file, smallint, vexpr-string, scircle, vexpr-float, vexpr-
+  date, pql-string, real, spoint, pql-int, timestamp, pql-date, date,
+  integer, box, pql-upload, double precision, sbox, bigint, time,
+  bytea; defaults to 'real') -- datatype for the column (SQL-like type
+  system)
+* **ucd** (unicode string; defaults to '') -- UCD of the column
+* **unit** (unicode string; defaults to '') -- Unit of the values
+* **utype** (unicode string; defaults to None) -- utype for this
+  column
+* **verbLevel** (integer; defaults to '20') -- Minimal verbosity level
+  at which to include this column
+* **xtype** (unicode string; defaults to None) -- VOTable xtype giving
+  the serialization form
+
+Structure Children
+..................
+
+* values (contains `Element values`_) -- Specification of legal values
+
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+* **stc** (non-settable internally used value; defaults to None) --
+  Internally used STC information for this column (do not assign to
+  unless instructed to do so)
+* **stcUtype** (non-settable internally used value; defaults to None)
+  -- Internally used STC information for this column (do not assign
+  to)
+
+Element columnRef
+'''''''''''''''''
+
+A reference from a group to a column within a table.
+
+ColumnReferences do not support qualified references, i.e., you
+can only give simple names.
+
+columnRef
+Atomic Children
+...............
+
+* **key** (unicode string; defaults to <Undefined>) -- The key (i.e.,
+  name) of the referenced column or param.
+* **ucd** (unicode string; defaults to None) -- The UCD of the group
+* **utype** (unicode string; defaults to None) -- A utype for the
+  group
+
+Element columnRef (view)
+''''''''''''''''''''''''
+
+A reference to a table column for building simple views.
+
+columnRef (view)
+Atomic Children
+...............
+
+* **key** (unicode string; defaults to <Undefined>) -- Column name
+  within the referenced table.
+* **table** (id reference; defaults to <Undefined>) -- Reference to
+  the table the field comes from.
+
+Element condDesc
+''''''''''''''''
+
+A query specification for cores talking to the database.
+
+CondDescs define inputs as a sequence of InputKeys (see `Element InputKey`_).
+Internally, the values in the InputKeys can be translated to SQL.
+
+condDesc
+Atomic Children
+...............
+
+* **buildFrom** (id reference; defaults to None) -- A reference to a
+  column or an InputKey to define this CondDesc
+* **combining** (boolean; defaults to 'False') -- Allow some input
+  keys to be missing when others are given? (you want this for pseudo-
+  condDescs just collecting random input keys)
+* **fixedSQL** (unicode string; defaults to None) -- Always insert
+  this SQL statement into the query.  Deprecated.
+* **joiner** (unicode string; defaults to 'OR') -- When yielding
+  multiple fragments, join them using this operator (probably the only
+  thing besides OR is AND).
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **required** (boolean; defaults to 'False') -- Reject queries not
+  filling the InputKeys of this CondDesc
+* **silent** (boolean; defaults to 'False') -- Do not produce SQL from
+  this CondDesc.  This can be used to convey meta information to the
+  core.  However, in general, a service is a more appropriate place to
+  deal with such information, and thus you should prefer service
+  InputKeys to silent CondDescs.
+
+Structure Children
+..................
+
+* group (contains `Element group`_) -- Group child input keys in the
+  input table (primarily interesting for web forms, where this
+  grouping is shown graphically; Set the style property to compact to
+  have a one-line group there)
+* inputKeys (contains `Element inputKey`_ and may be repeated zero or
+  more times) -- One or more InputKeys defining the condition's input.
+* phraseMaker (contains `Element phraseMaker`_) -- Code to generate
+  custom SQL from the input keys
+
+Element customDF
+''''''''''''''''
+
+A custom data function for a service.
+
+Custom data functions can be used to expose certain aspects of a service
+to Nevow templates.  Thus, their definition usually only makes sense with
+custom templates, though you could, in principle, override built-in
+render functions.
+
+In the data functions, you have the names ctx for nevow's context and
+data for whatever data the template passes to the renderer. 
+
+You can access the embedding service as service, the embedding
+RD as service.rd.
+
+You can return arbitrary python objects -- whatever the render functions
+can deal with.  You could, e.g., write::
+
+  <customDF name="now">
+    return datetime.datetime.utcnow()
+  </customDF>
+
+customDF
+Atomic Children
+...............
+
+* Character content of the element (defaulting to '') -- Function body
+  of the renderer; the arguments are named ctx and data.
+* **name** (unicode string; defaults to <Undefined>) -- Name of the
+  render function (use this in the n:render attribute in custom
+  templates).
+
+Element customRF
+''''''''''''''''
+
+A custom render function for a service.
+
+Custom render functions can be used to expose certain aspects of a service
+to Nevow templates.  Thus, their definition usually only makes sense with
+custom templates, though you could, in principle, override built-in
+render functions.
+
+In the render functions, you have the names ctx for nevow's context and
+data for whatever data the template passes to the renderer. 
+
+You can return anything that can be in a stan DOM.  Usually, this will be
+a string.  To return HTML, use the stan DOM available under the T namespace.
+
+As an example, the following code returns the current data as a link::
+
+  return ctx.tag[T.a(href=data)[data]]
+
+You can access the embedding service as service, the embedding
+RD as service.rd.
+
+customRF
+Atomic Children
+...............
+
+* Character content of the element (defaulting to '') -- Function body
+  of the renderer; the arguments are named ctx and data.
+* **name** (unicode string; defaults to <Undefined>) -- Name of the
+  render function (use this in the n:render attribute in custom
+  templates).
+
+Element data
+''''''''''''
+
+A description of how to process data from a given set of sources.
+
+Data descriptors bring together a grammar, a source specification and
+"makes", each giving a table and a rowmaker to feed the table from the
+grammar output.
+
+They are the "executable" parts of a resource descriptor.  Their ids
+are used as arguments to gavoimp for partial imports.
+
+data
+Atomic Children
+...............
+
+* **auto** (boolean; defaults to 'True') -- Import this data set if
+  not explicitly mentioned on the command line?
+* **dependents** (Zero or more unicode string-typed *recreateAfter*
+  elements; defaults to u'[]') -- A data ID to recreate when this
+  resource is remade; use # syntax to reference in other RDs.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **updating** (boolean; defaults to 'False') -- Keep existing tables
+  on import?  You usually want this False unless you have some kind of
+  sources management, e.g., via a sources ignore specification.
+
+Structure Children
+..................
+
+* grammar (contains one of keyValueGrammar, cdfHeaderGrammar,
+  directGrammar, dictlistGrammar, freeREGrammar, voTableGrammar,
+  customGrammar, rowsetGrammar, fitsTableGrammar, csvGrammar,
+  nullGrammar, fitsProdGrammar, contextGrammar, columnGrammar,
+  embeddedGrammar, binaryGrammar, pdsGrammar, reGrammar,
+  mySQLDumpGrammar) -- Grammar used to parse this data set.
+* makes (contains `Element make`_ and may be repeated zero or more
+  times) -- Specification of a target table and the rowmaker to feed
+  them.
+* params (contains `Element param`_ and may be repeated zero or more
+  times) -- Param ("global columns") for this data (mostly for VOTable
+  serialization).
+* registration (contains `Element publish (data)`_) -- A registration
+  (to the VO registry) of this data collection.
+* rowmakers (contains `Element rowmaker`_ and may be repeated zero or
+  more times) -- Embedded build rules (usually rowmakers are defined
+  toplevel)
+* sources (contains `Element sources`_) -- Specification of sources
+  that should be fed to the grammar.
+* tables (contains `Element table`_ and may be repeated zero or more
+  times) -- Embedded table definitions (usually, tables are defined
+  toplevel)
+
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element EDIT
+''''''''''''
+
+an event stream targeted at editing other structures.
+
+EDIT
+Atomic Children
+...............
+
+* **doc** (unicode string; defaults to None) -- A description of this
+  stream (should be restructured text).
+* **ref** (unicode string; defaults to <Undefined>) -- Destination of
+  the edits, in the form elementName[<name or id>]
+
+Element events
+''''''''''''''
+
+An event stream as a child of another element.
+
+events
+Atomic Children
+...............
+
+* **doc** (unicode string; defaults to None) -- A description of this
+  stream (should be restructured text).
+
+Element execute
+'''''''''''''''
+
+a container for calling code.
+
+This is a cron-like functionality.  The jobs are run in separate
+threads, so they need to be thread-safe with respect to the
+rest of DaCHS.  DaCHS serializes calls, though, so that your
+code should never run twice at the same time.
+
+At least on CPython, you must make sure your code does not
+block with the GIL held; this is still in the server process.
+If you do daring things, fork off (note that you must not use
+any database connections you may have after forking, which means
+you can't safely use the RD passed in).  See the docs on CronJob.
+
+Then testing/debugging such code, use ``gavo admin execute rd#id``
+to immediately run the jobs.
+
+execute
+Atomic Children
+...............
+
+* **at** (Comma-separated list of strings; defaults to <Not
+  given/empty>) -- One or more hour:minute pairs at which to run the
+  code each day.  This conflicts with every.  Optionally, you can
+  prefix each time by one of m<dom> or w<dow> for jobs only to be
+  exectued at some day of the month or week, both counted from 1.  So,
+  'm22 7:30, w3 15:02' would execute on the 22nd of each month at 7:30
+  UTC and on every wednesday at 15:02.
+* **debug** (boolean; defaults to 'False') -- If true, on execution of
+  external processes (span or spawnPython), the output will be
+  accumulated and mailed to the administrator.  Note that output of
+  the actual cron job itself is not caught (it might turn up in
+  serverStderr). You could use execDef.outputAccum.append(<stuff>) to
+  have information from within the code included.
+* **every** (integer; defaults to <Not given/empty>) -- Run the job
+  roughly every this many seconds.  This conflicts with at.  Note that
+  the first execution of such a job is after every/10 seconds, and
+  that the timers start anew at every server restart.  So, if you
+  restart often, these jobs may run much more frequently or not at all
+  if the interval is large.
+* **title** (unicode string; defaults to <Undefined>) -- Some
+  descriptive title for the job; this is used in diagnostics.
+
+Structure Children
+..................
+
+* job (contains `Element job`_) -- The code to run.
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element foreignKey
+''''''''''''''''''
+
+A description of a foreign key relation between this table and another
+one.
+
+foreignKey
+Atomic Children
+...............
+
+* **dest** (unicode string; defaults to <Not given/empty>) -- Comma-
+  separated list of columns in the target table belonging to its key.
+  No checks for their existence, uniqueness, etc. are done here.  If
+  not given, defaults to source.
+* **inTable** (id reference; defaults to <Undefined>) -- Reference to
+  the table the foreign key points to.
+* **metaOnly** (boolean; defaults to 'False') -- Do not tell the
+  database to actually create the foreign key, just declare it in the
+  metadata.  This is for when you want to document a relationship but
+  don't want the DB to actually enforce this.  This is typically a
+  wise thing to do when you have, say a gigarecord of flux/density
+  pairs and only several thousand metadata records -- you may want to
+  update the latter without having to tear down the former.
+* **source** (unicode string; defaults to <Undefined>) -- Comma-
+  separated list of local columns corresponding to the foreign key.
+  No sanity checks are performed here.
+
+Element group
+'''''''''''''
+
+A group is a collection of columns, parameters and other groups 
+with a dash of metadata.
+
+Within a group, you can refer to columns or params of the enclosing table 
+by their names.  Nothing outside of the enclosing table can be
+part of a group.
+
+Rather than referring to params, you can also embed them into a group;
+they will then *not* be present in the embedding table.
+
+Groups may contain groups.
+
+One application for this is grouping input keys for the form renderer.
+For such groups, you probably want to give the label property (and
+possibly cssClass).
+
+group
+Atomic Children
+...............
+
+* **description** (whitespace normalized unicode string; defaults to
+  None) -- A short (one-line) description of the group
+* **name** (a column name within an SQL table.  These have to match
+  ``[A-Za-z_][A-Za-z0-9_]*$``.  In a desperate pinch, you can generate
+  delimited identifiers (that can contain anything) by prefixing the
+  name with 'quoted/' (but you cannot use rowmakers to fill such
+  tables).; defaults to None) -- Name of the column (must be SQL-valid
+  for onDisk tables)
+* **ucd** (unicode string; defaults to None) -- The UCD of the group
+* **utype** (unicode string; defaults to None) -- A utype for the
+  group
+
+Structure Children
+..................
+
+* columnRefs (contains `Element columnRef`_ and may be repeated zero
+  or more times) -- References to table columns belonging to this
+  group
+* groups (contains an instance of the embedding element and may be
+  repeated zero or more times) -- Sub-groups of this group (names are
+  still referenced from the enclosing table)
+* paramRefs (contains `Element paramRef`_ and may be repeated zero or
+  more times) -- Names of table parameters belonging to this group
+* params (contains `Element param`_ and may be repeated zero or more
+  times) -- Immediate param elements for this group (use paramref to
+  reference params defined in the parent table)
+
+Other Children
+..............
+
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element httpUpload
+''''''''''''''''''
+
+An upload going with a URL.
+
+httpUpload
+Atomic Children
+...............
+
+* Character content of the element (defaulting to '') -- Inline data
+  to be uploaded (conflicts with source)
+* **fileName** (unicode string; defaults to None) -- Remote file name
+  for the uploaded file.
+* **name** (unicode string; defaults to <Undefined>) -- Name of the
+  upload parameter
+* **source** (unicode string; defaults to <Not given/empty>) -- Path
+  to a file containing the data to be uploaded.
+
+Element ignoreOn
+''''''''''''''''
+
+A condition on a row that, if true, causes the row to be dropped.
+
+Here, you can set bail to abort an import when the condition is met
+rather than just dropping the row.
+
+ignoreOn
+Atomic Children
+...............
+
+* **bail** (boolean; defaults to 'False') -- Abort when condition is
+  met?
+* **name** (unicode string; defaults to 'unnamed') -- A name that
+  should help the user figure out what trigger caused some condition
+  to fire.
+
+Structure Children
+..................
+
+* triggers (contains any of
+  and,keyPresent,keyNull,keyIs,keyMissing,not and may be repeated zero
+  or more times) -- One or more conditions joined by an implicit
+  logical or.  See Triggers_ for information on what can stand here.
+
+Element ignoreSources
+'''''''''''''''''''''
+
+A specification of sources to ignore.
+
+Sources mentioned here are compared against the inputsDir-relative path
+of sources generated by sources (cf. `Element sources`_).  If there is
+a match, the corresponding source will not be processed.
+
+You can get ignored files from various sources.  If you give more
+than one source, the set of ignored files is the union of the the 
+individual sets.
+
+ignoreSources
+Atomic Children
+...............
+
+* **fromdb** (unicode string; defaults to None) -- A DB query to
+  obtain a set of sources to ignore; the select clause must select
+  exactly one column containing the source key.
+* **fromfile** (unicode string; defaults to None) -- A name of a file
+  containing blacklisted source paths, one per line.  Empty lines and
+  lines beginning with a hash are ignored.
+* **patterns** (Zero or more unicode string-typed *pattern* elements;
+  defaults to u'[]') -- Shell patterns to ignore.  Slashes are treated
+  like any other character, i.e., patterns do not know about paths.
+
+Element index
+'''''''''''''
+
+A description of an index in the database.
+
+In real databases, indices may be fairly complex things; still, the
+most common usage here will be to just index a single column::
+
+  <index columns="my_col"/>
+
+To index over functions, use  the character content; parentheses are added
+by DaCHS, so don't have them in the content.  An explicit specification
+of the index expression is also necessary to allow RE pattern matches using
+indices in character columns (outside of the C locale).  That would be::
+
+  <index columns="uri">uri text_pattern_ops</index>
+
+(you still want to give columns so the metadata engine is aware of the 
+index).  See section "Operator Classes and Operator Families" in
+the Postgres documentation for details.
+
+index
+Atomic Children
+...............
+
+* **cluster** (boolean; defaults to 'False') -- Cluster the table
+  according to this index?
+* **columns** (Comma-separated list of strings; defaults to '') --
+  Table columns taking part in the index (must be given even if there
+  is an expression building the index and mention all columns taking
+  part in the index generated by it
+* Character content of the element (defaulting to '') -- Raw SQL
+  specifying an expression the table should be indexed for.  If not
+  given, the expression will be generated from columns (which is what
+  you usually want).
+* **method** (unicode string; defaults to None) -- The indexing
+  method, like an index type.  In the 8.x, series of postgres, you
+  need to set method=GIST for indices over pgsphere columns;
+  otherwise, you should not need to worry about this.
+* **name** (unicode string; defaults to <Undefined>) -- Name of the
+  index (defaults to something computed from columns; the name of the
+  parent table will be prepended in the DB)
+
+Element inputDD
+'''''''''''''''
+
+A data descriptor for defining a core's input.
+
+In contrast to normal data descriptors, InputDescriptors generate
+a contextGrammar to feed the table mentioned in the first make if
+no grammar is given (this typically is the input table of the core).  
+Conversely, if a contextGrammar is given but no make, a make with a table
+having params defined by the contextGrammar's inputKeys is 
+automatically generated.
+
+Attributes like auto, dependents, sources and the like probably
+make little sense for input descriptors.
+
+inputDD
+Atomic Children
+...............
+
+* **auto** (boolean; defaults to 'True') -- Import this data set if
+  not explicitly mentioned on the command line?
+* **dependents** (Zero or more unicode string-typed *recreateAfter*
+  elements; defaults to u'[]') -- A data ID to recreate when this
+  resource is remade; use # syntax to reference in other RDs.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **updating** (boolean; defaults to 'False') -- Keep existing tables
+  on import?  You usually want this False unless you have some kind of
+  sources management, e.g., via a sources ignore specification.
+
+Structure Children
+..................
+
+* grammar (contains one of keyValueGrammar, cdfHeaderGrammar,
+  directGrammar, dictlistGrammar, freeREGrammar, voTableGrammar,
+  customGrammar, rowsetGrammar, fitsTableGrammar, csvGrammar,
+  nullGrammar, fitsProdGrammar, contextGrammar, columnGrammar,
+  embeddedGrammar, binaryGrammar, pdsGrammar, reGrammar,
+  mySQLDumpGrammar) -- Grammar used to parse this data set.
+* makes (contains `Element make`_ and may be repeated zero or more
+  times) -- Specification of a target table and the rowmaker to feed
+  them.
+* params (contains `Element param`_ and may be repeated zero or more
+  times) -- Param ("global columns") for this data (mostly for VOTable
+  serialization).
+* registration (contains `Element publish (data)`_) -- A registration
+  (to the VO registry) of this data collection.
+* rowmakers (contains `Element rowmaker`_ and may be repeated zero or
+  more times) -- Embedded build rules (usually rowmakers are defined
+  toplevel)
+* sources (contains `Element sources`_) -- Specification of sources
+  that should be fed to the grammar.
+* tables (contains `Element table`_ and may be repeated zero or more
+  times) -- Embedded table definitions (usually, tables are defined
+  toplevel)
+
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Element inputKey
+''''''''''''''''
+
+A description of a piece of input.
+
+Think of inputKeys as abstractions for input fields in forms, though
+they are used for services not actually exposing HTML forms as well.
+
+Some of the DDL-type attributes (e.g., references) only make sense here
+if columns are being defined from the InputKey.
+
+You can give a "defaultForForm" property on inputKeys to supply
+a string literal default that will be pre-filled in the form
+renderer and is friends but not for other renderers (like S*AP).
+
+Properties evaluated:
+
+* defaultForForm -- a value entered into form fields by default
+  (be stingy with those; while it's nice to not have to set things
+  presumably right for almost everyone, having to delete stuff
+  you don't want over and over is really annoying).
+* adaptToRenderer -- a true boolean literal here causes the param
+  to be adapted for the renderer (e.g., float could become vizierexpr-float).
+  You'll usually not want this, because the expressions are 
+  generally evaluated by the database, and the condDescs do the
+  adaptation themselves.  This is mainly for rare situations like
+  file uploads in custom cores.
+
+inputKey
+Atomic Children
+...............
+
+* Character content of the element (defaulting to <Not given/empty>)
+  -- The value of parameter. It is parsed according to the param's
+  type using the default parser for the type VOTable tabledata.
+* **description** (whitespace normalized unicode string; defaults to
+  '') -- A short (one-line) description of the values in this column.
+* **displayHint** (Display hint; defaults to '') -- Suggested
+  presentation; the format is  <kw>=<value>{,<kw>=<value>}, where what
+  is interpreted depends on the output format.  See, e.g.,
+  documentation on HTML renderers and the formatter child of
+  outputFields.
+* **fixup** (unicode string; defaults to None) -- A python expression
+  the value of which will replace this column's value on database
+  reads.  Write a ___ to access the original value.  You can use
+  macros for the embedding table. This is for, e.g., simple URL
+  generation (fixup="'\internallink{/this/svc}'+___"). It will *only*
+  kick in when tuples are deserialized from the database, i.e., *not*
+  for values taken from tables in memory.
+* **inputUnit** (unicode string; defaults to None) -- Override unit of
+  the table column with this.
+* **multiplicity** (unicode string; defaults to None) -- Set this to
+  single to have an atomic value (chosen at random if multiple input
+  values are given), forced-single to have an atomic value and raise
+  an exception if multiple values come in, or multiple to receive
+  lists.  On the form renderer, this is ignored, and the values are
+  what nevow formal passes in. If not given, it is single unless there
+  is a values element with options, in which case it's multiple.
+* **name** (a column name within an SQL table.  These have to match
+  ``[A-Za-z_][A-Za-z0-9_]*$``.  In a desperate pinch, you can generate
+  delimited identifiers (that can contain anything) by prefixing the
+  name with 'quoted/' (but you cannot use rowmakers to fill such
+  tables).; defaults to <Undefined>) -- Name of the column
+* **note** (unicode string; defaults to None) -- Reference to a note
+  meta on this table explaining more about this column
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **required** (boolean; defaults to 'False') -- Record becomes
+  invalid when this column is NULL
+* **showItems** (integer; defaults to '3') -- Number of items to show
+  at one time on selection widgets.
+* **std** (boolean; defaults to 'False') -- Is this input key part of
+  a standard interface for registry purposes?
+* **tablehead** (unicode string; defaults to None) -- Terse phrase to
+  put into table headers for this column
+* **type** (a type name; the internal type system is similar to SQL's
+  with some restrictions and extensions.  The known atomic types
+  include: unicode, pql-float, text, spoly, char, raw, vexpr-mjd,
+  boolean, file, smallint, vexpr-string, scircle, vexpr-float, vexpr-
+  date, pql-string, real, spoint, pql-int, timestamp, pql-date, date,
+  integer, box, pql-upload, double precision, sbox, bigint, time,
+  bytea; defaults to 'real') -- datatype for the column (SQL-like type
+  system)
+* **ucd** (unicode string; defaults to '') -- UCD of the column
+* **unit** (unicode string; defaults to '') -- Unit of the values
+* **utype** (unicode string; defaults to None) -- utype for this
+  column
+* **verbLevel** (integer; defaults to '20') -- Minimal verbosity level
+  at which to include this column
+* **widgetFactory** (unicode string; defaults to None) -- A python
+  expression for a custom widget factory for this input, e.g.,
+  'Hidden' or 'widgetFactory(TextArea, rows=15, cols=30)'
+* **xtype** (unicode string; defaults to None) -- VOTable xtype giving
+  the serialization form
+
+Structure Children
+..................
+
+* values (contains `Element values`_) -- Specification of legal values
+
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+* **stc** (non-settable internally used value; defaults to None) --
+  Internally used STC information for this column (do not assign to
+  unless instructed to do so)
+* **stcUtype** (non-settable internally used value; defaults to None)
+  -- Internally used STC information for this column (do not assign
+  to)
+
+Element job
+'''''''''''
+
+Python code for use within execute.
+
+The resource descriptor this runs at is available as rd, the execute
+definition (having such attributes as title, job, plus any
+properties given in the RD) as execDef.
+
+Note that no I/O capturing takes place (that's impossible since in
+general the jobs run within the server).  To have actual cron jobs,
+use ``execDef.spawn(["cmd", "arg1"...])``.  This will send a mail on failed
+execution and also raise a ReportableError in that case.
+
+In the frequent use case of a resdir-relative python program, you
+can use the ``execDef.spawnPython(modulePath)`` function.
+
+If you must stay within the server process, you can do something like::
+
+  mod = utils.loadPythonModule(rd.getAbsPath("bin/coverageplot.py"))
+  mod.makePlot()
+
+-- in that way, your code can sit safely within the resource directory
+and you still don't have to manipulate the module path.
+
+job
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element lateEvents
+''''''''''''''''''
+
+An event stream played back by a mixin when the substrate is being
+finalised (but before the early processing).
+
+lateEvents
+Atomic Children
+...............
+
+* **doc** (unicode string; defaults to None) -- A description of this
+  stream (should be restructured text).
+
+Element macDef
+''''''''''''''
+
+A macro definition within an RD.
+
+The macro defined is available on the parent.
+
+macDef
+Atomic Children
+...............
+
+* Character content of the element (defaulting to '') -- Replacement
+  text of the macro
+* **name** (unicode string; defaults to <Undefined>) -- Name the macro
+  will be available as
+
+Element make
+''''''''''''
+
+A build recipe for tables belonging to a data descriptor.
+
+All makes belonging to a DD will be processed in the order in which they
+appear in the file.
+
+make
+Atomic Children
+...............
+
+* **parmaker** (id reference; defaults to <Not given/empty>) -- The
+  parmaker (i.e., mapping rules from grammar parameters to table
+  parameters) for the table being made.  You will usually not give a
+  parmaker.
+* **role** (unicode string; defaults to None) -- The role of the
+  embedded table within the data set
+* **rowSource** (One of: rows, parameters; defaults to 'rows') --
+  Source for the raw rows processed by this rowmaker.
+* **rowmaker** (id reference; defaults to <Not given/empty>) -- The
+  rowmaker (i.e., mapping rules from grammar keys to table columns)
+  for the table being made.
+* **table** (id reference; defaults to <Undefined>) -- Reference to
+  the table to be embedded
+
+Structure Children
+..................
+
+* scripts (contains `Element script`_ and may be repeated zero or more
+  times) -- Code snippets attached to this object.  See Scripting_ .
+
+Element map
+'''''''''''
+
+A mapping rule.
+
+To specify the source of a mapping, you can either
+
+- grab a value from what's emitted by the grammar or defined using var via
+  the source attribute.  The value given for source is converted to a 
+  python value and stored.
+- or give a python expression in the body.  In that case, no further
+  type conversion will be attempted.
+
+If neither source or a body is given, map uses the key attribute as its
+source attribute.
+
+The map rule generates a key/value pair in the result record.
+
+map
+Atomic Children
+...............
+
+* Character content of the element (defaulting to '') -- A python
+  expression giving the value for key.
+* **key** (unicode string; defaults to <Undefined>) -- Name of the
+  column the value is to end up in.
+* **nullExcs** (unicode string; defaults to <Not given/empty>) --
+  Exceptions that should be caught and cause the value to be NULL,
+  separated by commas.
+* **nullExpr** (unicode string; defaults to <Not given/empty>) -- A
+  python expression for a value that is mapped to NULL (None).
+  Equality is checked after building the value, so this expression has
+  to be of the column type.  Use map with the parseWithNull function
+  to catch null values before type conversion.
+* **source** (unicode string; defaults to None) -- Source key name to
+  convert to column value (either a grammar key or a var).
+
+Element mixinDef
+''''''''''''''''
+
+A definition for a resource mixin.
+
+Resource mixins are resource descriptor fragments typically rooted
+in tables (though it's conceivable that other structures could
+grow mixin attributes as well).
+
+They are used to define and implement certain behaviours components of
+the DC software want to see:
+
+- products want to be added into their table, and certain fields are required
+  within tables describing products
+- tables containing positions need some basic machinery to support scs.
+- siap needs quite a bunch of fields
+
+Mixins consist of events that are played back on the structure
+mixing in before anything else happens (much like original) and
+two procedure definitions, viz, processEarly and processLate.
+These can access the structure that has the mixin as substrate.
+
+processEarly is called as part of the substrate's completeElement
+method.  processLate is executed just before the parser exits.  This
+is the place to fix up anything that uses the table mixed in.  Note,
+however, that you should be as conservative as possible here -- you
+should think of DC structures as immutable as long as possible.
+
+Programmatically, you can check if a certain table mixes in 
+something by calling its mixesIn method.
+
+Recursive application of mixins, even to seperate objects, will deadlock.
+
+mixinDef
+Atomic Children
+...............
+
+* **doc** (unicode string; defaults to None) -- Documentation for this
+  mixin
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **source** (id reference; defaults to None) -- id of a stream to
+  replay
+
+Structure Children
+..................
+
+* edits (contains `Element EDIT`_ and may be repeated zero or more
+  times) -- Changes to be performed on the events played back.
+* events (contains `Element events`_) -- Events to be played back into
+  the structure mixing this in at mixin time.
+* lateEvents (contains `Element lateEvents`_) -- Events to be played
+  back into the structure mixing this in at completion time.
+* pars (contains `Element mixinPar`_ and may be repeated zero or more
+  times) -- Parameters available for this mixin.
+* processEarly (contains `Element processEarly`_) -- Code executed at
+  element fixup.
+* processLate (contains `Element processLate`_) -- Code executed
+  resource fixup.
+* prunes (contains `Element PRUNE`_ and may be repeated zero or more
+  times) -- Conditions for removing items from the playback stream.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro decapitalize`_, `Macro getConfig`_, `Macro internallink`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro schema`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element mixinPar
+''''''''''''''''
+
+A parameter definition for mixins.  
+
+The (optional) body provides a default for the parameter.
+
+mixinPar
+Atomic Children
+...............
+
+* Character content of the element (defaulting to <Not given/empty>)
+  -- The default for the parameter. A __NULL__ here does not directly
+  mean None/NULL, but since the content will frequently end up in
+  attributes, it will ususally work as presetting None. An empty
+  content means a non-preset parameter, which must be filled in
+  applications.  The magic value __EMPTY__ allows presetting an empty
+  string.
+* **description** (whitespace normalized unicode string; defaults to
+  None) -- Some human-readable description of what the parameter is
+  about
+* **key** (unicode string; defaults to <Undefined>) -- The name of the
+  parameter
+* **late** (boolean; defaults to 'False') -- Bind the name not at
+  setup time but at applying time.  In rowmaker procedures, for
+  example, this allows you to refer to variables like vars or rowIter
+  in the bindings.
+
+Element option
+''''''''''''''
+
+A value for enumerated columns.
+
+For presentation purposes, an option can have a title, defaulting to
+the option's value.
+
+option
+Atomic Children
+...............
+
+* Character content of the element (defaulting to '') -- The value of
+  the option; this is what is used in, e.g., queries and the like.
+* **title** (unicode string; defaults to <Not given/empty>) -- A Label
+  for presentation purposes; defaults to val.
+
+Element outputField
+'''''''''''''''''''
+
+A column for defining the output of a service.
+
+It adds some attributes useful for rendering results, plus functionality
+specific to certain cores.
+
+The optional formatter overrides the standard formatting code in HTML
+(which is based on units, ucds, and displayHints).  You receive
+the item from the database as data and must return a string or
+nevow stan.  In addition to the standard `Functions available for
+row makers`_ you have queryMeta and nevow's tags in T.
+
+Here's an example for generating a link to another service using this
+facility::
+
+  <outputField name="more" 
+      select="array[centerAlpha,centerDelta] as more" tablehead="More"
+      description="More exposures near the center of this plate">
+    <formatter><![CDATA[
+      return T.a(href=base.makeSitePath("/lswscans/res/positions/q/form?"
+          "POS=%s,%s&SIZE=1&INTERSECT=OVERLAPS&cutoutSize=0.5"
+          "&__nevow_form__=genForm"%tuple(data)
+          ))["More"] ]]>
+    </formatter>
+  </outputField>
+
+outputField
+Atomic Children
+...............
+
+* **description** (whitespace normalized unicode string; defaults to
+  '') -- A short (one-line) description of the values in this column.
+* **displayHint** (Display hint; defaults to '') -- Suggested
+  presentation; the format is  <kw>=<value>{,<kw>=<value>}, where what
+  is interpreted depends on the output format.  See, e.g.,
+  documentation on HTML renderers and the formatter child of
+  outputFields.
+* **fixup** (unicode string; defaults to None) -- A python expression
+  the value of which will replace this column's value on database
+  reads.  Write a ___ to access the original value.  You can use
+  macros for the embedding table. This is for, e.g., simple URL
+  generation (fixup="'\internallink{/this/svc}'+___"). It will *only*
+  kick in when tuples are deserialized from the database, i.e., *not*
+  for values taken from tables in memory.
+* **formatter** (unicode string; defaults to None) -- Function body to
+  render this item to HTML.
+* **name** (a column name within an SQL table.  These have to match
+  ``[A-Za-z_][A-Za-z0-9_]*$``.  In a desperate pinch, you can generate
+  delimited identifiers (that can contain anything) by prefixing the
+  name with 'quoted/' (but you cannot use rowmakers to fill such
+  tables).; defaults to <Undefined>) -- Name of the column
+* **note** (unicode string; defaults to None) -- Reference to a note
+  meta on this table explaining more about this column
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **required** (boolean; defaults to 'False') -- Record becomes
+  invalid when this column is NULL
+* **select** (unicode string; defaults to <Undefined>) -- Use this SQL
+  fragment rather than field name in the select list of a DB based
+  core.
+* **sets** (Comma-separated list of strings; defaults to '') -- Output
+  sets this field should be included in; ALL includes the field in all
+  output sets.
+* **tablehead** (unicode string; defaults to None) -- Terse phrase to
+  put into table headers for this column
+* **type** (a type name; the internal type system is similar to SQL's
+  with some restrictions and extensions.  The known atomic types
+  include: unicode, pql-float, text, spoly, char, raw, vexpr-mjd,
+  boolean, file, smallint, vexpr-string, scircle, vexpr-float, vexpr-
+  date, pql-string, real, spoint, pql-int, timestamp, pql-date, date,
+  integer, box, pql-upload, double precision, sbox, bigint, time,
+  bytea; defaults to 'real') -- datatype for the column (SQL-like type
+  system)
+* **ucd** (unicode string; defaults to '') -- UCD of the column
+* **unit** (unicode string; defaults to '') -- Unit of the values
+* **utype** (unicode string; defaults to None) -- utype for this
+  column
+* **verbLevel** (integer; defaults to '20') -- Minimal verbosity level
+  at which to include this column
+* **wantsRow** (boolean; defaults to None) -- Does formatter expect
+  the entire row rather than the colum value only?
+* **xtype** (unicode string; defaults to None) -- VOTable xtype giving
+  the serialization form
+
+Structure Children
+..................
+
+* values (contains `Element values`_) -- Specification of legal values
+
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+* **stc** (non-settable internally used value; defaults to None) --
+  Internally used STC information for this column (do not assign to
+  unless instructed to do so)
+* **stcUtype** (non-settable internally used value; defaults to None)
+  -- Internally used STC information for this column (do not assign
+  to)
+
+Element outputTable
+'''''''''''''''''''
+
+A table that has outputFields for columns.
+
+outputTable
+Atomic Children
+...............
+
+* **adql** (boolean or 'hidden'; defaults to 'False') -- Should this
+  table be available for ADQL queries?  In addition to True/False,
+  this can also be 'hidden' for tables readable from the TAP machinery
+  but not published in the metadata; this is useful for, e.g., tables
+  contributing to a published view.  Warning: adql=hidden is
+  incompatible with setting readProfiles manually.
+* **allProfiles** (Comma separated list of profile names.; defaults to
+  u'admin') -- A (comma separated) list of profile names through which
+  the object can be written or administred.
+* **autoCols** (Comma-separated list of strings; defaults to '') --
+  Column names obtained from fromTable; you can use shell patterns
+  into the output table's parent table (in a table core, that's the
+  queried table; in a service, it's the core's output table) here.
+* **dupePolicy** (One of: drop, check, overwrite, dropOld; defaults to
+  'check') -- Handle duplicate rows with identical primary keys
+  manually by raising an error if existing and new rows are not
+  identical (check), dropping the new one (drop), updating the old one
+  (overwrite), or dropping the old one and inserting the new one
+  (dropOld)?
+* **forceUnique** (boolean; defaults to 'False') -- Enforce dupe
+  policy for primary key (see dupePolicy)?
+* A mixin reference, typically to support certain protocol.  See
+  Mixins_.
+* **namePath** (id reference; defaults to None) -- Reference to an
+  element tried to satisfy requests for names in id references of this
+  element's children.
+* **onDisk** (boolean; defaults to 'False') -- Table in the database
+  rather than in memory?
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **primary** (Comma-separated list of strings; defaults to '') --
+  Comma separated names of columns making up the primary key.
+* **readProfiles** (Comma separated list of profile names.; defaults
+  to u'trustedquery') -- A (comma separated) list of profile names
+  through which the object can be read.
+* **system** (boolean; defaults to 'False') -- Is this a system table?
+  If it is, it will not be dropped on normal imports, and accesses to
+  it will not be logged.
+* **temporary** (boolean; defaults to 'False') -- If this is an onDisk
+  table, make it temporary?  This is mostly useful for custom cores
+  and such.
+* **verbLevel** (integer; defaults to None) -- Copy over columns from
+  fromTable not more verbose than this.
+* **viewStatement** (unicode string; defaults to None) -- A single SQL
+  statement to create a view.  Setting this makes this table a view.
+  The statement will typically be something like CREATE VIEW
+  \\curtable AS (SELECT \\colNames FROM...).
+
+Structure Children
+..................
+
+* columns (contains `Element outputField`_ and may be repeated zero or
+  more times) -- Output fields for this table.
+* foreignKeys (contains `Element foreignKey`_ and may be repeated zero
+  or more times) -- Foreign keys used in this table
+* groups (contains `Element group`_ and may be repeated zero or more
+  times) -- Groups for columns and params of this table
+* indices (contains `Element index`_ and may be repeated zero or more
+  times) -- Indices defined on this table
+* params (contains `Element param`_ and may be repeated zero or more
+  times) -- Param ("global columns") for this table.
+* registration (contains `Element publish (data)`_) -- A registration
+  (to the VO registry) of this table.
+* stc (contains `Element stc`_ and may be repeated zero or more times)
+  -- STC-S definitions of coordinate systems.
+
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro curtable`_, `Macro decapitalize`_, `Macro getConfig`_, `Macro getParam`_, `Macro internallink`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro nameForUCD`_, `Macro nameForUCDs`_, `Macro qName`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro schema`_, `Macro tablename`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element par
+'''''''''''
+
+A parameter of a procedure definition.
+
+Bodies of ProcPars are interpreted as python expressions, in
+which macros are expanded in the context of the procedure application's
+parent.  If a body is empty, the parameter has no default and has
+to be filled by the procedure application.
+
+par
+Atomic Children
+...............
+
+* Character content of the element (defaulting to <Not given/empty>)
+  -- The default for the parameter. The special value __NULL__
+  indicates a NULL (python None) as usual. An empty content means a
+  non-preset parameter, which must be filled in applications.  The
+  magic value __EMPTY__ allows presetting an empty string.
+* **description** (whitespace normalized unicode string; defaults to
+  None) -- Some human-readable description of what the parameter is
+  about
+* **key** (unicode string; defaults to <Undefined>) -- The name of the
+  parameter
+* **late** (boolean; defaults to 'False') -- Bind the name not at
+  setup time but at applying time.  In rowmaker procedures, for
+  example, this allows you to refer to variables like vars or rowIter
+  in the bindings.
+
+Element param
+'''''''''''''
+
+A table parameter.
+
+This is like a column, except that it conceptually applies to all
+rows in the table.  In VOTables, params will be rendered as
+PARAMs.  
+
+While we validate the values passed using the DC default parsers,
+at least the VOTable params will be literal copies of the string
+passed in.
+
+You can obtain a parsed value from the value attribute.
+
+Null value handling is a bit tricky with params.  An empty param (like 
+``<param name="x"/>)`` is always NULL (None in python).
+In order to allow setting NULL even where syntactially something has
+to stand, we also turn any __NULL__ to None.
+
+For floats, NaN will also yield NULLs.  For integers, you can also
+use
+
+  <param name="x" type="integer"><values nullLiteral="-1"/>-1</params>
+
+For arrays, floats, and strings, the interpretation of values is 
+undefined.  Following VOTable practice, we do not tell empty strings and
+NULLs apart; for internal usage, there is a little hack: __EMPTY__ as literal
+does set an empty string.  This is to allow defaulting of empty strings -- in
+VOTables, these cannot be distinguished from "true" NULLs.
+
+param
+Atomic Children
+...............
+
+* Character content of the element (defaulting to <Not given/empty>)
+  -- The value of parameter. It is parsed according to the param's
+  type using the default parser for the type VOTable tabledata.
+* **description** (whitespace normalized unicode string; defaults to
+  '') -- A short (one-line) description of the values in this column.
+* **displayHint** (Display hint; defaults to '') -- Suggested
+  presentation; the format is  <kw>=<value>{,<kw>=<value>}, where what
+  is interpreted depends on the output format.  See, e.g.,
+  documentation on HTML renderers and the formatter child of
+  outputFields.
+* **fixup** (unicode string; defaults to None) -- A python expression
+  the value of which will replace this column's value on database
+  reads.  Write a ___ to access the original value.  You can use
+  macros for the embedding table. This is for, e.g., simple URL
+  generation (fixup="'\internallink{/this/svc}'+___"). It will *only*
+  kick in when tuples are deserialized from the database, i.e., *not*
+  for values taken from tables in memory.
+* **name** (a column name within an SQL table.  These have to match
+  ``[A-Za-z_][A-Za-z0-9_]*$``.  In a desperate pinch, you can generate
+  delimited identifiers (that can contain anything) by prefixing the
+  name with 'quoted/' (but you cannot use rowmakers to fill such
+  tables).; defaults to <Undefined>) -- Name of the column
+* **note** (unicode string; defaults to None) -- Reference to a note
+  meta on this table explaining more about this column
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **required** (boolean; defaults to 'False') -- Record becomes
+  invalid when this column is NULL
+* **tablehead** (unicode string; defaults to None) -- Terse phrase to
+  put into table headers for this column
+* **type** (a type name; the internal type system is similar to SQL's
+  with some restrictions and extensions.  The known atomic types
+  include: unicode, pql-float, text, spoly, char, raw, vexpr-mjd,
+  boolean, file, smallint, vexpr-string, scircle, vexpr-float, vexpr-
+  date, pql-string, real, spoint, pql-int, timestamp, pql-date, date,
+  integer, box, pql-upload, double precision, sbox, bigint, time,
+  bytea; defaults to 'real') -- datatype for the column (SQL-like type
+  system)
+* **ucd** (unicode string; defaults to '') -- UCD of the column
+* **unit** (unicode string; defaults to '') -- Unit of the values
+* **utype** (unicode string; defaults to None) -- utype for this
+  column
+* **verbLevel** (integer; defaults to '20') -- Minimal verbosity level
+  at which to include this column
+* **xtype** (unicode string; defaults to None) -- VOTable xtype giving
+  the serialization form
+
+Structure Children
+..................
+
+* values (contains `Element values`_) -- Specification of legal values
+
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+* **stc** (non-settable internally used value; defaults to None) --
+  Internally used STC information for this column (do not assign to
+  unless instructed to do so)
+* **stcUtype** (non-settable internally used value; defaults to None)
+  -- Internally used STC information for this column (do not assign
+  to)
+
+Element paramRef
+''''''''''''''''
+
+A reference from a group to a parameter within a table.
+
+ParamReferences do not support qualified references, i.e., you
+can only give simple names.
+
+Also note that programmatically, you usually want to resolve
+ParamReferences within the Table instance, not the table definition.
+
+paramRef
+Atomic Children
+...............
+
+* **key** (unicode string; defaults to <Undefined>) -- The key (i.e.,
+  name) of the referenced column or param.
+* **ucd** (unicode string; defaults to None) -- The UCD of the group
+* **utype** (unicode string; defaults to None) -- A utype for the
+  group
+
+Element phraseMaker
+'''''''''''''''''''
+
+A procedure application for generating SQL expressions from input keys.
+
+PhraseMaker code must *yield* SQL fragments that can occur in WHERE
+clauses, i.e., boolean expressions (thus, they must be generator
+bodies).
+
+The following names are available to them:
+
+  - inputKeys -- the list of input keys for the parent CondDesc
+  - inPars -- a dictionary mapping inputKey names to the values
+    provided by the user
+  - outPars -- a dictionary that is later used as the parameter
+    dictionary to the query.
+  - core -- the core to which this phrase maker's condDesc belongs
+
+To get the standard SQL a single key would generate, say::
+
+  yield base.getSQLForField(inputKeys[0], inPars, outPars)
+
+To insert some value into outPars, do not simply use some key into
+outParse, since, e.g., the condDesc might be used multiple times.
+Instead, use getSQLKey, maybe like this::
+
+  ik = inputKeys[0]
+  yield "%s BETWEEN %%(%s)s AND %%(%s)s"%(ik.name,
+    base.getSQLKey(ik.name, inPars[ik.name]-10, outPars),
+    base.getSQLKey(ik.name, inPars[ik.name]+10, outPars))
+
+getSQLKey will make sure unique names in outPars are chosen and
+enters the values there.
+
+phraseMaker
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element procDef
+'''''''''''''''
+
+An embedded procedure.
+
+Embedded procedures are python code fragments with some interface defined
+by their type.  They can occur at various places (which is called procedure
+application generically), e.g., as row generators in grammars, as applys in
+rowmakers, or as SQL phrase makers in condDescs.
+
+They consist of the actual actual code and, optionally, definitions like
+the namespace setup, configuration parameters, or a documentation.
+
+The procedure applications compile into python functions with special
+global namespaces.  The signatures of the functions are determined by
+the type attribute.
+
+ProcDefs are referred to by procedure applications using their id.
+
+procDef
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element processEarly
+''''''''''''''''''''
+
+A code fragment run by the mixin machinery when the structure
+being worked on is being finished.
+
+Within processEarly, you can access:
+
+- Access the structure the mixin is applied to as "substrate"
+- The mixin parameters as "mixinPars"
+- The parse context as "context"
+
+(the context is particularly handy for context.resolveId)
+
+processEarly
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element processLate
+'''''''''''''''''''
+
+A code fragment run by the mixin machinery when the parser parsing
+everything exits.
+
+Access the structure mixed in as "substrate", the root structure of
+the whole parse tree as root, and the context that is just about
+finishing as context.
+
+processLate
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+
+Element PRUNE
+'''''''''''''
+
+An active tag that lets you selectively delete children of the
+current object.
+
+You give it regular expression-valued attributes; on the replay of
+the stream, matching items and their children will not be replayed.
+
+If you give more than one attribute, the result will be a conjunction
+of the specified conditions.
+
+This only works if the items to be matched are true XML attributes
+(i.e., not written as children).
+
+PRUNE
+Element publish (data)
+''''''''''''''''''''''
+
+A request for registration of a data or table item.
+
+This is much like publish for services, just for data and tables;
+since they have no renderers, you can only have one register element
+per such element.
+
+Data registrations may refer to published services that make their
+data available.
+
+publish (data)
+Atomic Children
+...............
+
+* **services** (list of id references (comma separated or in distinct
+  elements); defaults to []) -- A DC-internal reference to a service
+  that lets users query that within the data collection; tables with
+  adql=True are automatically declared to be servedBy the TAP service.
+* **sets** (Comma-separated list of strings; defaults to
+  'ivo_managed') -- A comma-separated list of sets this data will be
+  published in.  To publish data to the VO registry, just say
+  ivo_managed here.  Other sets probably don't make much sense right
+  now.  ivo_managed also is the default.
+
+Element publish
+'''''''''''''''
+
+A specification of how a service should be published.
+
+This contains most of the metadata for what is an interface in
+registry speak.
+
+publish
+Atomic Children
+...............
+
+* **auxiliary** (boolean; defaults to 'False') -- Auxiliary
+  publications are for capabilities not intended to be picked up for
+  all-VO queries, typically because they are already registered with
+  other services. This is mostly used internally; you probably have no
+  reason to touch it.
+* **render** (unicode string; defaults to <Undefined>) -- The renderer
+  the publication will point at.
+* **service** (id reference; defaults to <Not given/empty>) --
+  Reference for a service actually implementing the capability
+  corresponding to this publication.  This is mainly when there is a
+  vs:WebBrowser service accompanying a VO protocol service, and this
+  other service should be published in the same resource record.  See
+  also the operator's guide.
+* **sets** (Comma-separated list of strings; defaults to '') -- Comma-
+  separated list of sets this service will be published in.
+  Predefined are: local=publish on front page, ivo_managed=register
+  with the VO registry.  If you leave it empty, 'local' publication is
+  assumed.
+
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+
+Element regSuite
+''''''''''''''''
+
+A suite of regression tests.
+
+regSuite
+Atomic Children
+...............
+
+* **sequential** (boolean; defaults to 'False') -- Set to true if the
+  individual tests need to be run in sequence.
+* **title** (whitespace normalized unicode string; defaults to None)
+  -- A short, human-readable phrase describing what this suite is
+  about.
+
+Structure Children
+..................
+
+* tests (contains `Element regTest`_ and may be repeated zero or more
+  times) -- Tests making up this suite
+
+Element regTest
+'''''''''''''''
+
+A regression test.
+
+regTest
+Atomic Children
+...............
+
+* **code** (unicode string; defaults to <Not given/empty>) -- A python
+  function body.
+* **doc** (unicode string; defaults to '') -- Human-readable docs for
+  this proc (may be interpreted as restructured text).
+* **name** (unicode string; defaults to <Not given/empty>) -- A name
+  of the proc.  ProcApps compute their (python) names to be somwhat
+  random strings.  Set a name manually to receive more easily
+  decipherable error messages.  If you do that, you have to care about
+  name clashes yourself, though.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **procDef** (id reference; defaults to <Not given/empty>) --
+  Reference to the procedure definition to apply
+* **tags** (Comma-separated list of strings; defaults to '') -- A list
+  of (free-form) tags for this test. Tagged tests are only run when
+  the runner is constructed with at least one of the tags given.
+  This is mainly for restricting tags to production or development
+  servers.
+* **title** (whitespace normalized unicode string; defaults to
+  <Undefined>) -- A short, human-readable phrase describing what this
+  test is exercising.
+* **type** (One of: regTest, rowfilter, dataFunction,
+  descriptorGenerator, metaMaker, phraseMaker, mixinProc,
+  dataFormatter, sourceFields, apply, t_t; defaults to None) -- The
+  type of the procedure definition.  The procedure applications will
+  in general require certain types of definitions.
+
+Structure Children
+..................
+
+* bindings (contains `Element bind`_ and may be repeated zero or more
+  times) -- Values for parameters of the procedure definition
+* setups (contains `Element setup`_ and may be repeated zero or more
+  times) -- Setup of the namespace the function will run in
+* url (contains `Element url`_) -- The source from which to fetch the
+  test data.
+
+Element resource
+''''''''''''''''
+
+A resource descriptor (RD); the root for all elements described here.
+
+RDs collect all information about how to parse a particular source (like a
+collection of FITS images, a catalogue, or whatever), about the database
+tables the data ends up in, and the services used to access them.
+
+resource
+Atomic Children
+...............
+
+* **allProfiles** (Comma separated list of profile names.; defaults to
+  u'admin') -- A (comma separated) list of profile names through which
+  the object can be written or administred.
+* **readProfiles** (Comma separated list of profile names.; defaults
+  to u'trustedquery') -- A (comma separated) list of profile names
+  through which the object can be read.
+* **require** (unicode string; defaults to None) -- Import the named
+  gavo module (for when you need something registred)
+* **resdir** (unicode string; defaults to None) -- Base directory for
+  source files and everything else belonging to the resource.
+* **schema** (unicode string; defaults to <Undefined>) -- Database
+  schema for tables defined here.  Follow the rule 'one schema, one
+  RD' if at all possible.  If two RDs share the same schema, the must
+  generate exactly the same permissions for that schema; this means,
+  in particular, that if one has an ADQL-published table, so must the
+  other.  In a nutshell: one schema, one RD.
+
+Structure Children
+..................
+
+* condDescs (contains `Element condDesc`_ and may be repeated zero or
+  more times) -- Global condition descriptors for later reference
+* cores (contains any of siapCutoutCore,scsCore,pythonCore,registryCor
+  e,dbCore,fancyQueryCore,fixedQueryCore,adqlCore,ssapProcessCore,debu
+  gCore,datalinkCore,ssapCore,uploadCore,productCore,computedCore,edit
+  Core,customCore,sdmCore,nullCore and may be repeated zero or more
+  times) -- Cores available in this resource.
+* dds (contains `Element data`_ and may be repeated zero or more
+  times) -- Descriptors for the data generated and/or published within
+  this resource.
+* jobs (contains `Element execute`_ and may be repeated zero or more
+  times) -- Jobs to be run while this RD is active.
+* macDefs (contains `Element macDef`_ and may be repeated zero or more
+  times) -- User-defined macros available on this RD
+* mixdefs (contains `Element mixinDef`_ and may be repeated zero or
+  more times) -- Mixin definitions (usually not for users)
+* outputTables (contains `Element outputTable`_ and may be repeated
+  zero or more times) -- Canned output tables for later reference.
+* procDefs (contains `Element procDef`_ and may be repeated zero or
+  more times) -- Procedure definintions (rowgens, rowmaker applys)
+* resRecs (contains `Element resRec`_ and may be repeated zero or more
+  times) -- Non-service resources for the IVOA registry.  They will be
+  published when gavo publish is run on the RD.
+* rowmakers (contains `Element rowmaker`_ and may be repeated zero or
+  more times) -- Transformations for going from grammars to tables. If
+  specified in the RD, they must be referenced from make elements to
+  become active.
+* scripts (contains `Element script`_ and may be repeated zero or more
+  times) -- Code snippets attached to this object.  See Scripting_ .
+* services (contains `Element service`_ and may be repeated zero or
+  more times) -- Services exposing data from this resource.
+* simpleView (contains `Element simpleView`_) -- Definitions of views
+  created from natural joins
+* tables (contains `Element table`_ and may be repeated zero or more
+  times) -- A table used or created by this resource
+* tests (contains `Element regSuite`_ and may be repeated zero or more
+  times) -- Suites of regression tests connected to this RD.
+
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTcc0`_, `Macro RSTccby`_, `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro decapitalize`_, `Macro getConfig`_, `Macro internallink`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro schema`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element resRec
+''''''''''''''
+
+A resource for pure registration purposes.
+
+A Resource does nothing; it is for registration of Authorities,
+Organizations, Instruments, or whatever.  Thus, they consist
+of metadata only (resources that do something are services; they
+carry their own metadata and care for their registration themselves.).
+
+All resources must either have an id (which is used in the construction of
+their IVORN), or you must give an identifier meta item.
+
+You must further set the following meta items:
+
+   - resType specifying the kind of resource record.  You should not
+     use this element to build resource records for services or tables
+     (use the normal elements, even if the actual resrouces are external
+     to DaCHS).  resType can be registry, organization, authority, 
+     deleted, or anything else for which registry.builders has a
+     handling class.
+   - title
+   - subject(s)
+   - description
+   - referenceURL
+   - creationDate
+
+Additional meta keys (e.g., accessURL for a registry) may be required 
+depending on resType.  See the registry session in the operator's guide.
+
+resRec
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro decapitalize`_, `Macro getConfig`_, `Macro internallink`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro schema`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element rowmaker
+''''''''''''''''
+
+A definition of the mapping between grammar input and finished rows
+ready for shipout.
+
+Rowmakers consist of variables, procedures and mappings.  They
+result in a python callable doing the mapping.
+
+RowmakerDefs double as macro packages for the expansion of various
+macros.  The standard macros will need to be quoted, the rowmaker macros
+above yield python expressions.
+
+Within map and var bodies as well as late apply pars and apply bodies, 
+you can refer to the grammar input as vars["name"] or, shorter @name.
+
+To add output keys, use map or, in apply bodies, add keys to the
+result dictionary.
+
+rowmaker
+Atomic Children
+...............
+
+* **idmaps** (Comma-separated list of strings; defaults to '') -- List
+  of column names that are just "mapped through" (like map with key
+  only); you can use shell patterns to select multiple colums at once.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **simplemaps** (Comma-separated list of <identifer>:<identifier>
+  pairs; defaults to None) -- Abbreviated notation for <map source>;
+  each pair is destination:source
+
+Structure Children
+..................
+
+* apps (contains `Element apply`_ and may be repeated zero or more
+  times) -- Procedure applications.
+* ignoreOn (contains `Element ignoreOn`_) -- Conditions on the input
+  record coming from the grammar to cause the input record to be
+  dropped by the rowmaker, i.e., for this specific table.  If you need
+  to drop a row for all tables being fed, use a trigger on the
+  grammar.
+* maps (contains `Element map`_ and may be repeated zero or more
+  times) -- Mapping rules.
+* vars (contains `Element var`_ and may be repeated zero or more
+  times) -- Definitions of intermediate variables.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro decapitalize`_, `Macro dlMetaURI`_, `Macro docField`_, `Macro getConfig`_, `Macro inputRelativePath`_, `Macro inputSize`_, `Macro internallink`_, `Macro lastSourceElements`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro property`_, `Macro qName`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro rootlessPath`_, `Macro rowsMade`_, `Macro rowsProcessed`_, `Macro schema`_, `Macro sourceDate`_, `Macro srcstem`_, `Macro standardPubDID`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element script
+''''''''''''''
+
+A script, i.e., some executable item within a resource descriptor.
+
+The content of scripts is given by their type -- usually, they are
+either python scripts or SQL with special rules for breaking the
+script into individual statements (which are basically like python's).
+
+The special language AC_SQL is like SQL, but execution errors are
+ignored.  This is not what you want for most data RDs (it's intended
+for housekeeping scripts).
+
+See `Scripting`_.
+
+script
+Atomic Children
+...............
+
+* Character content of the element (defaulting to '') -- The script
+  body.
+* **lang** (One of: python, AC_SQL, SQL; defaults to <Undefined>) --
+  Language of the script.
+* **name** (unicode string; defaults to 'anonymous') -- A human-
+  consumable designation of the script.
+* **notify** (boolean; defaults to 'True') -- Send out a notification
+  when running this script.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **type** (One of: postCreation, newSource, beforeDrop, sourceDone,
+  preImport, preIndex; defaults to <Undefined>) -- Point of time at
+  which script is to run.
+
+Element service
+'''''''''''''''
+
+A service definition.
+
+A service is a combination of a core and one or more renderers.  They
+can be published, and they carry the metadata published into the VO.
+
+You can set the defaultSort property on the service to a name of an
+output column to preselect a sort order.  Note again that this will
+slow down responses for all but the smallest tables unless there is
+an index on the corresponding column.
+
+Properties evaluated:
+
+* defaultSort -- a key to sort on by default with the form renderer.  
+  This differs from the dbCore's sortKey in that this does not suppress the
+  widget itself, it just sets a default for its value.  Don't use this unless
+  you have to; the combination of sort and limit can have disastrous effects
+  on the run time of queries.
+* votableRespectsOutputTable -- usually, VOTable output puts in
+  all columns from the underlying database table with low enough
+  verbLevel (essentially).  When this property is "True" (case-sensitive),
+  that's not done and only the service's output table is evaluated.
+  [Note that column selection is such a mess it needs to be fixed
+  before version 1.0 anyway]
+
+service
+Atomic Children
+...............
+
+* **allowed** (Comma-separated list of strings; defaults to '') --
+  Names of renderers allowed on this service; leave emtpy to allow the
+  form renderer only.
+* **core** (id reference; defaults to <Undefined>) -- The core that
+  does the computations for this service.  Instead of a reference, you
+  can use an immediate element of some registred core.
+* **customPage** (unicode string; defaults to None) -- resdir-relative
+  path to custom page code.  It is used by the 'custom' renderer
+* **defaultRenderer** (unicode string; defaults to None) -- A name of
+  a renderer used when none is provided in the URL (lets you have
+  shorter URLs).
+* **limitTo** (unicode string; defaults to None) -- Limit access to
+  the group given; the empty default disables access control.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* customDFs (contains `Element customDF`_ and may be repeated zero or
+  more times) -- Custom data functions for use in custom templates.
+* customRFs (contains `Element customRF`_ and may be repeated zero or
+  more times) -- Custom render functions for use in custom templates.
+* inputDD (contains `Element inputDD`_) -- A data descriptor for
+  obtaining the core's input, usually based on a contextGrammar.  For
+  many cores (e.g., DBCores), you do not want to give this but rather
+  want to let service figure this out from the core.
+* outputTable (contains `Element outputTable`_) -- The output fields
+  of this service.
+* publications (contains `Element publish`_ and may be repeated zero
+  or more times) -- Sets and renderers this service is published with.
+* serviceKeys (contains `Element inputKey`_ and may be repeated zero
+  or more times) -- Input widgets for processing by the service, e.g.
+  output sets.
+
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+* **template** (mapping; the value is the element content, the key is
+  in the  'key' (or, equivalently, key) attribute) -- Custom nevow
+  templates for this service; use key "form" to replace the Form
+  renderer's standard template.  Start the path with two slashes to
+  access system templates.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro decapitalize`_, `Macro getConfig`_, `Macro internallink`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro schema`_, `Macro tablesForTAP`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element setup
+'''''''''''''
+
+Prescriptions for setting up a namespace for a procedure application.
+
+You can add names to this namespace you using par(ameter)s.
+If a parameter has no default and an procedure application does
+not provide them, an error is raised.
+
+You can also add names by providing a code attribute containing
+a python function body in code.  Within, the parameters are
+available.  The procedure application's parent can be accessed
+as parent.  All names you define in the code are available as
+globals to the procedure body.
+
+Caution: Macros are expanded within the code; this means you
+need double backslashes if you want a single backslash in python
+code.
+
+setup
+Atomic Children
+...............
+
+* **codeFrags** (Zero or more unicode string-typed *code* elements;
+  defaults to u'[]') -- Python function bodies setting globals for the
+  function application.  Macros are expanded in the context of the
+  procedure's parent.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* pars (contains `Element par`_ and may be repeated zero or more
+  times) -- Names to add to the procedure's global namespace.
+
+Element simpleView
+''''''''''''''''''
+
+A simple way to define a view over some tables.
+
+To define a view in this way, you add fieldRef elements, giving
+table ids and column names.  The view will be a natural join of
+all tables involved.
+
+For more complex views, use a normal table with a viewStatement.
+
+These elements can be referred to like normal tables (internally, they
+are replaced by TableDefs when they are complete).
+
+simpleView
+Structure Children
+..................
+
+* colRefs (contains `Element columnRef`_ and may be repeated zero or
+  more times) -- References to the fields making up the natural join
+  of the simple view.
+
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+
+Element sources
+'''''''''''''''
+
+A Specification of a data descriptor's inputs.
+
+sources
+Atomic Children
+...............
+
+* Character content of the element (defaulting to '') -- A single file
+  name (this is for convenience)
+* **items** (Zero or more unicode string-typed *item* elements;
+  defaults to u'[]') -- String literals to pass to grammars.  In
+  contrast to patterns, they are not interpreted as file names but
+  passed to the grammar verbatim.  Normal grammars do not like this.
+  It is mainly intended for use with custom or null grammars.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **patterns** (Zero or more unicode string-typed *pattern* elements;
+  defaults to u'[]') -- Paths to the source files.  You can use shell
+  patterns here.
+* **recurse** (boolean; defaults to 'False') -- Search for pattern(s)
+  recursively in their directory part(s)?
+
+Structure Children
+..................
+
+* ignoredSources (contains `Element ignoreSources`_) -- Specification
+  of sources that should not be processed although they match
+  patterns.  Typically used in update-type data descriptors.
+
+Element stc
+'''''''''''
+
+A definition of a space-time coordinate system using STC-S.
+
+stc
+Atomic Children
+...............
+
+* Character content of the element (defaulting to '') -- An STC-S
+  string with column references (using quote syntax) instead of values
+
+Element table
+'''''''''''''
+
+A definition of a table, both on-disk and internal.
+
+Some attributes are ignored for the in-memory tables, e.g., roles or adql.
+
+table
+Atomic Children
+...............
+
+* **adql** (boolean or 'hidden'; defaults to 'False') -- Should this
+  table be available for ADQL queries?  In addition to True/False,
+  this can also be 'hidden' for tables readable from the TAP machinery
+  but not published in the metadata; this is useful for, e.g., tables
+  contributing to a published view.  Warning: adql=hidden is
+  incompatible with setting readProfiles manually.
+* **allProfiles** (Comma separated list of profile names.; defaults to
+  u'admin') -- A (comma separated) list of profile names through which
+  the object can be written or administred.
+* **dupePolicy** (One of: drop, check, overwrite, dropOld; defaults to
+  'check') -- Handle duplicate rows with identical primary keys
+  manually by raising an error if existing and new rows are not
+  identical (check), dropping the new one (drop), updating the old one
+  (overwrite), or dropping the old one and inserting the new one
+  (dropOld)?
+* **forceUnique** (boolean; defaults to 'False') -- Enforce dupe
+  policy for primary key (see dupePolicy)?
+* A mixin reference, typically to support certain protocol.  See
+  Mixins_.
+* **namePath** (id reference; defaults to None) -- Reference to an
+  element tried to satisfy requests for names in id references of this
+  element's children.
+* **onDisk** (boolean; defaults to 'False') -- Table in the database
+  rather than in memory?
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+* **primary** (Comma-separated list of strings; defaults to '') --
+  Comma separated names of columns making up the primary key.
+* **readProfiles** (Comma separated list of profile names.; defaults
+  to u'trustedquery') -- A (comma separated) list of profile names
+  through which the object can be read.
+* **system** (boolean; defaults to 'False') -- Is this a system table?
+  If it is, it will not be dropped on normal imports, and accesses to
+  it will not be logged.
+* **temporary** (boolean; defaults to 'False') -- If this is an onDisk
+  table, make it temporary?  This is mostly useful for custom cores
+  and such.
+* **viewStatement** (unicode string; defaults to None) -- A single SQL
+  statement to create a view.  Setting this makes this table a view.
+  The statement will typically be something like CREATE VIEW
+  \\curtable AS (SELECT \\colNames FROM...).
+
+Structure Children
+..................
+
+* columns (contains `Element column`_ and may be repeated zero or more
+  times) -- Columns making up this table.
+* foreignKeys (contains `Element foreignKey`_ and may be repeated zero
+  or more times) -- Foreign keys used in this table
+* groups (contains `Element group`_ and may be repeated zero or more
+  times) -- Groups for columns and params of this table
+* indices (contains `Element index`_ and may be repeated zero or more
+  times) -- Indices defined on this table
+* params (contains `Element param`_ and may be repeated zero or more
+  times) -- Param ("global columns") for this table.
+* registration (contains `Element publish (data)`_) -- A registration
+  (to the VO registry) of this table.
+* stc (contains `Element stc`_ and may be repeated zero or more times)
+  -- STC-S definitions of coordinate systems.
+
+Other Children
+..............
+
+* **meta** -- a piece of meta information, giving at least a name and
+  some content.  See Metadata_ on what is permitted here.
+* **property** (mapping of user-defined keywords in the name attribute
+  to string values) -- Properties (i.e., user-defined key-value pairs)
+  for the element.
+
+Macros predefined here: `Macro RSTservicelink`_, `Macro RSTtable`_, `Macro colNames`_, `Macro curtable`_, `Macro decapitalize`_, `Macro getConfig`_, `Macro getParam`_, `Macro internallink`_, `Macro magicEmpty`_, `Macro metaString`_, `Macro nameForUCD`_, `Macro nameForUCDs`_, `Macro qName`_, `Macro quote`_, `Macro rdId`_, `Macro rdIdDotted`_, `Macro schema`_, `Macro tablename`_, `Macro test`_, `Macro today`_, `Macro upper`_, `Macro urlquote`_
+
+Element url
+'''''''''''
+
+A source document for a regression test.
+
+As string URLs, they specify where to get data from, but the additionally
+let you specify uploads, authentication, headers and http methods,
+while at the same time saving you manual escaping of parameters.
+
+The bodies is the path to run the test against.  This is
+interpreted as relative to the RD if there's no leading slash,
+relative to the server if there's a leading slash, and absolute
+if there's a scheme.
+
+The attributes are translated to parameters, except for a few
+pre-defined names.  If you actually need those as URL parameters,
+should at us and we'll provide some way of escaping these.
+
+We don't actually parse the URLs coming in here.  GET parameters
+are appended with a & if there's a ? in the existing URL, with a ?
+if not.  Again, shout if this is too dumb for you (but urlparse
+really isn't all that robust either...)
+
+url
+Atomic Children
+...............
+
+* Character content of the element (defaulting to '') -- Base for URL
+  generation; embedded whitespace will be removed, so you're free to
+  break those whereever you like.
+* **httpAuthKey** (unicode string; defaults to <Not given/empty>) -- A
+  key into ~/.gavo/test.creds to find a user/password pair for this
+  request.
+* **httpHonorRedirects** (boolean; defaults to 'False') -- Follow 30x
+  redirects instead of just using status, headers, and payload of the
+  initial request.
+* **httpMethod** (unicode string; defaults to 'GET') -- Request
+  method; usually one of GET or POST
+* **parSet** (One of: form; defaults to <Not given/empty>) --
+  Preselect a default parameter set; form gives what our framework
+  adds to form queries.
+* **postPayload** (unicode string; defaults to <Not given/empty>) --
+  Path to a file containing material that should go with a POST
+  request (conflicts with additional parameters).
+
+Structure Children
+..................
+
+* uploads (contains `Element httpUpload`_ and may be repeated zero or
+  more times) -- HTTP uploads to add to request (must have
+  httpMethod="POST")
+
+Other Children
+..............
+
+* **value** (mapping; the value is the element content, the key is in
+  the  'key' (or, equivalently, key) attribute) -- Additional HTTP
+  headers to pass.
+* (ignore)
+
+Element values
+''''''''''''''
+
+Information on a column's values, in particular its domain.
+
+This is quite like the values element in a VOTable.  In particular,
+to accomodate VOTable usage, we require nullLiteral to be a valid literal
+for the parent's type.
+
+Note that DaCHS does not validate for contraints from values on
+table import.  This is mainly because before ``gavo values`` has run,
+values may not represent the new dataset in semiautomatic values.
+
+With HTTP parameters, values validation does take place (but again,
+that's mostly not too helpful because there are query languages
+sitting in between most of the time).
+
+Hence, the main utility of values is metadata declaration, both
+in the form render (where they become placeholders) and in datalink
+(where they are communicated as VOTable values).
+
+values
+Atomic Children
+...............
+
+* **default** (unicode string; defaults to None) -- A default value
+  (currently only used for options).
+* **fromdb** (unicode string; defaults to None) -- A query fragment
+  returning just one column to fill options from (will add to options
+  if some are given).  Do not write SELECT or anything, just the
+  column name and the where clause.
+* **max** (unicode string; defaults to None) -- Maximum acceptable
+  value as a datatype literal
+* **min** (unicode string; defaults to None) -- Minimum acceptable
+  value as a datatype literal
+* **multiOk** (boolean; defaults to 'False') -- Deprecated, use
+  multiplicity=multiple instead.
+* **nullLiteral** (unicode string; defaults to None) -- An appropriate
+  value representing a NULL for this column in VOTables and similar
+  places.  You usually should only set it for integer types and chars.
+  Note that rowmakers make no use of this nullLiteral, i.e., you can
+  and should choose null values independently of your source.  Again,
+  for reals, floats and (mostly) text you probably do not want to do
+  this.
+* **original** (id reference; defaults to None) -- An id of an element
+  to base the current one on.  This provides a simple inheritance
+  method.  The general rules for advanced referencing in RDs apply.
+
+Structure Children
+..................
+
+* options (contains `Element option`_ and may be repeated zero or more
+  times) -- List of acceptable values (if set)
+
+Element var
+'''''''''''
+
+A definition of a rowmaker variable.
+
+It consists of a name and a python expression, including function
+calls.  The variables are entered into the input row coming from
+the grammar.
+
+var elements are evaluated before apply elements, in the sequence
+they are in the RD.  You can refer to keys defined by vars already
+evaluated in the usual @key manner.
+
+var
+Atomic Children
+...............
+
+* Character content of the element (defaulting to '') -- A python
+  expression giving the value for key.
+* **key** (unicode string; defaults to <Undefined>) -- Name of the
+  column the value is to end up in.
+* **nullExcs** (unicode string; defaults to <Not given/empty>) --
+  Exceptions that should be caught and cause the value to be NULL,
+  separated by commas.
+* **nullExpr** (unicode string; defaults to <Not given/empty>) -- A
+  python expression for a value that is mapped to NULL (None).
+  Equality is checked after building the value, so this expression has
+  to be of the column type.  Use map with the parseWithNull function
+  to catch null values before type conversion.
+* **source** (unicode string; defaults to None) -- Source key name to
+  convert to column value (either a grammar key or a var).
+
