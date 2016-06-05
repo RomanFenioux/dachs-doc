@@ -47,53 +47,23 @@ them.
 For Data Center Operators
 -------------------------
 
-* :doc:`Installation and configuration <install>`
+.. toctree::
+   :maxdepth: 1
 
-  * :download:`install.pdf <../pdf/install.pdf>`
-  * :download:`install.rstx <./install.rstx>`
+   Installation and configuration <install>
+   Operator's guide <opguide>
+   Tutorial on importing data <tutorial>
+   Reference <refdoc_gendoc>
+   How do I? <howDoI>
+   Hints on common problems <commonproblems>
+   Guide to writing HTML templates <templating>
+   Guide to write booster grammars <booster>
+   Guide to preprocessing input files <processors>
 
-* :doc:`Operator's guide <opguide>`
-
-  * :download:`opguide.pdf <../pdf/opguide.pdf>`
-  * :download:`opguide.rstx <./opguide.rstx>`
-
-* :doc:`Tutorial on importing data <tutorial>`
-
-  * :download:`tutorial.pdf <../pdf/tutorial.pdf>`
-  * :download:`tutorial.rstx <./tutorial.rstx>`
-
-* :doc:`Reference <refdoc_gendoc>`
-
-  * :download:`ref.pdf <http://docs.g-vo.org/DaCHS/ref.pdf>`
-  * :download:`refdoc.rstx <./refdoc.rstx>` (this is a template, built
+* :download:`refdoc.rstx <./refdoc.rstx>` (this is a template, built
     with ``gavo gendoc``.  You're welcome to fix problems in the
     template, but the documents cannot be updated on
     github/readthedocs).
-
-* :doc:`How do I? <howDoI>`
-
-  * :download:`howDoI.pdf <../pdf/howDoI.pdf>`
-  * :download:`howDoI.rstx <./howDoI.rstx>`
-
-* :doc:`Hints on common problems <commonproblems>`
-
-  * :download:`commonproblems.pdf <../pdf/commonproblems.pdf>`
-  * :download:`commonproblems.rstx <./commonproblems.rstx>`
-
-* :doc:`Guide to writing HTML templates <templating>`
-
-  * :download:`templating.pdf <../pdf/templating.pdf>`
-  * :download:`templating.rstx <./templating.rstx>`
-
-* :doc:`Guide to write booster grammars <booster>`
-
-  * :download:`booster.pdf <../pdf/booster.pdf>`
-  * :download:`booster.rstx <./booster.rstx>`
-
-* :doc:`Guide to preprocessing input files <processors>`
-
-  * :download:`processors.pdf <../pdf/processors.pdf>`
-  * :download:`processors.rstx <./processors.rstx>`
 
 * `Reference to elements and attributes in use in GAVO's data center <http://docs.g-vo.org/DaCHS/elemref.html>`_.
 
