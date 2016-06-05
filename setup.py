@@ -19,12 +19,11 @@ if __name__ == '__main__':
     if opt=='install':
         import os
         on_rtd = os.environ.get('READTHEDOCS') == 'True'
-        if on_rtd:
-            new_url = 'http://dachs-doc.rtfd.io/en/latest'
-            replace_gavo_url(new_url)
-        else:
+        if not on_rtd:
             print ""
             print "So far, only ReadTheDocs support has been added."
-            print "Exiting without modifications."
+            print "Files are being modified anyway, for test purposes."
             print ""
 
+        new_url = 'http://dachs-doc.rtfd.io/en/latest'
+        replace_gavo_url(new_url)
